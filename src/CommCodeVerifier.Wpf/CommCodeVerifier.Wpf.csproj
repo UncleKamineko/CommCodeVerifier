@@ -34,7 +34,6 @@
         <None Include="..\..\tests\CommCodeVerifier.Core.Tests\Config\**\*" Exclude="..\..\tests\CommCodeVerifier.Core.Tests\Config\settings.json" Link="Файлы конфигурации\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" Visible="false" />
     </ItemGroup>
     <ItemGroup>
-      <None Remove="Elegantthemes-Beautiful-Flat.png" />
       <None Remove="Elegantthemes-Softies-Clipboard.ico" />
     </ItemGroup>
     <ItemGroup>
