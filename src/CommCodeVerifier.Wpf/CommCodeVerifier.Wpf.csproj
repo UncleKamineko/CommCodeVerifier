@@ -9,6 +9,7 @@
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <!-- Только русские ресурсы .NET: меньше размер сборки с .NET внутри. -->
         <SatelliteResourceLanguages>ru</SatelliteResourceLanguages>
+        <ApplicationIcon>Elegantthemes-Softies-Clipboard.ico</ApplicationIcon>
     </PropertyGroup>
 
     <ItemGroup>
@@ -37,10 +38,12 @@
       <None Remove="Elegantthemes-Softies-Clipboard.ico" />
     </ItemGroup>
     <ItemGroup>
+      <Content Include="Elegantthemes-Softies-Clipboard.ico" />
+    </ItemGroup>
+    <ItemGroup>
       <Folder Include="Ресурсы\" />
     </ItemGroup>
     <ItemGroup>
-      <Resource Include="Elegantthemes-Beautiful-Flat.png" />
       <Resource Include="Elegantthemes-Softies-Clipboard.ico" />
     </ItemGroup>
 
