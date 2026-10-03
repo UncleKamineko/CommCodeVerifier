@@ -1,0 +1,15 @@
+<Project>
+  <PropertyGroup>
+    <!-- Версия по умолчанию для локальной сборки; в релизе берётся из тега (v1.0.0 → 1.0.0). -->
+    <Version>1.0.0-alpha.1</Version>
+    <Product>CommCodeVerifier</Product>
+    <Company>UncleKamineko</Company>
+    <Copyright>© UncleKamineko</Copyright>
+
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Deterministic>true</Deterministic>
+    <NeutralLanguage>ru-RU</NeutralLanguage>
+  </PropertyGroup>
+</Project>

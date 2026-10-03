@@ -1,0 +1,40 @@
+<Window x:Class="CommCodeVerifier.Wpf.Views.SaveChangesWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Несохранённые изменения"
+        SizeToContent="WidthAndHeight"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner"
+        FontFamily="Segoe UI"
+        FontSize="{DynamicResource Font.Text}"
+        TextOptions.TextFormattingMode="Display"
+        UseLayoutRounding="True">
+    <StackPanel>
+        <Border Background="White" Padding="16,16,20,16">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="&#xE7BA;"
+                           FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                           FontSize="28"
+                           Foreground="{DynamicResource Brush.WarningIcon}"
+                           VerticalAlignment="Center" />
+                <TextBlock x:Name="MessageText"
+                           MaxWidth="380"
+                           TextWrapping="Wrap"
+                           VerticalAlignment="Center"
+                           Margin="12,2,4,2" />
+            </StackPanel>
+        </Border>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="16,12">
+            <StackPanel.Resources>
+                <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                    <Setter Property="MinWidth" Value="92" />
+                    <Setter Property="MinHeight" Value="30" />
+                    <Setter Property="Margin" Value="8,0,0,0" />
+                </Style>
+            </StackPanel.Resources>
+            <Button Content="Не сохранять изменения" Click="OnDiscard" />
+            <Button x:Name="SaveButton" Content="Сохранить изменения" IsDefault="True" Click="OnSave" />
+        </StackPanel>
+    </StackPanel>
+</Window>

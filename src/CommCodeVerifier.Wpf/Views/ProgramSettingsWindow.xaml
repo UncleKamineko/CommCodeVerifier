@@ -1,0 +1,144 @@
+<Window x:Class="CommCodeVerifier.Wpf.Views.ProgramSettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:CommCodeVerifier.Wpf.Controls"
+        xmlns:settings="clr-namespace:CommCodeVerifier.Wpf.Settings"
+        xmlns:themes="clr-namespace:CommCodeVerifier.Wpf.Themes"
+        xmlns:local="clr-namespace:CommCodeVerifier.Wpf.Views"
+        Title="Настройки программы"
+        SizeToContent="WidthAndHeight"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner"
+        FontFamily="Segoe UI"
+        FontSize="{x:Static local:ProgramSettingsWindow.TextFontSize}"
+        TextOptions.TextFormattingMode="Display"
+        UseLayoutRounding="True">
+
+    <Window.Resources>
+        <!-- Постоянные размеры шрифтов окна: перекрывают общие ресурсы программы,
+             поэтому настройки ⚙ на окно не влияют. Значения — в ProgramSettingsWindow.xaml.cs. -->
+        <x:Static x:Key="Font.Text" Member="local:ProgramSettingsWindow.TextFontSize" />
+        <x:Static x:Key="Font.Button" Member="local:ProgramSettingsWindow.ButtonFontSize" />
+
+        <Style x:Key="Caption" TargetType="TextBlock">
+            <Setter Property="MaxWidth" Value="420" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="Margin" Value="0,6,10,6" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style x:Key="DefaultHint" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource Brush.Hint}" />
+            <Setter Property="Margin" Value="0,6,0,6" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style TargetType="controls:NumericUpDown">
+            <Setter Property="Width" Value="80" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Margin" Value="0,3,10,3" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Minimum" Value="{x:Static settings:UiSettings.MinFont}" />
+            <Setter Property="Maximum" Value="{x:Static settings:UiSettings.MaxFont}" />
+        </Style>
+    </Window.Resources>
+
+    <StackPanel>
+        <Grid Margin="16,16,16,8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <!-- 0 кнопки -->
+                <RowDefinition Height="Auto" />
+                <!-- 1 текст вкладок -->
+                <RowDefinition Height="Auto" />
+                <!-- 2 разделитель -->
+                <RowDefinition Height="Auto" />
+                <!-- 3 код -->
+                <RowDefinition Height="Auto" />
+                <!-- 4 правила -->
+                <RowDefinition Height="Auto" />
+                <!-- 5 сводка -->
+                <RowDefinition Height="Auto" />
+                <!-- 6 разделитель -->
+                <RowDefinition Height="Auto" />
+                <!-- 7 цветовая схема -->
+            </Grid.RowDefinitions>
+
+            <!-- Общие настройки -->
+            <TextBlock Grid.Row="0" Style="{StaticResource Caption}"
+                       Text="Размер шрифта на кнопках, px" />
+            <controls:NumericUpDown Grid.Row="0" Grid.Column="1" Value="{Binding ButtonFontPx}" />
+            <TextBlock Grid.Row="0" Grid.Column="2" Style="{StaticResource DefaultHint}"
+                       Text="{Binding Source={x:Static settings:UiSettings.DefaultButtonFont}, StringFormat=по умолчанию {0}}" />
+
+            <TextBlock Grid.Row="1" Style="{StaticResource Caption}"
+                       Text="Размер шрифта для текста на вкладках (кроме указанного ниже), px" />
+            <controls:NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding TabTextFontPx}" />
+            <TextBlock Grid.Row="1" Grid.Column="2" Style="{StaticResource DefaultHint}"
+                       Text="{Binding Source={x:Static settings:UiSettings.DefaultTabTextFont}, StringFormat=по умолчанию {0}}" />
+
+            <Separator Grid.Row="2" Grid.ColumnSpan="3" Margin="0,8" />
+
+            <!-- Настройки отдельных блоков -->
+            <TextBlock Grid.Row="3" Style="{StaticResource Caption}"
+                       Text="Размер шрифта коммерческого кода, px" />
+            <controls:NumericUpDown Grid.Row="3" Grid.Column="1" Value="{Binding CodeFontPx}" />
+            <TextBlock Grid.Row="3" Grid.Column="2" Style="{StaticResource DefaultHint}"
+                       Text="{Binding Source={x:Static settings:UiSettings.DefaultCodeFont}, StringFormat=по умолчанию {0}}" />
+
+            <TextBlock Grid.Row="4" Style="{StaticResource Caption}"
+                       Text="Размер шрифта применённых правил, px" />
+            <controls:NumericUpDown Grid.Row="4" Grid.Column="1" Value="{Binding RulesFontPx}" />
+            <TextBlock Grid.Row="4" Grid.Column="2" Style="{StaticResource DefaultHint}"
+                       Text="{Binding Source={x:Static settings:UiSettings.DefaultRulesFont}, StringFormat=по умолчанию {0}}" />
+
+            <TextBlock Grid.Row="5" Style="{StaticResource Caption}"
+                       Text="Размер шрифта сводки по результатам анализа, px" />
+            <controls:NumericUpDown Grid.Row="5" Grid.Column="1" Value="{Binding SummaryFontPx}" />
+            <TextBlock Grid.Row="5" Grid.Column="2" Style="{StaticResource DefaultHint}"
+                       Text="{Binding Source={x:Static settings:UiSettings.DefaultSummaryFont}, StringFormat=по умолчанию {0}}" />
+
+            <Separator Grid.Row="6" Grid.ColumnSpan="3" Margin="0,8" />
+
+            <!-- Цветовая схема -->
+            <TextBlock Grid.Row="7" Style="{StaticResource Caption}"
+                       Text="Цветовая схема интерфейса:" />
+            <ComboBox Grid.Row="7" Grid.Column="1" Grid.ColumnSpan="2"
+                      MinWidth="260" Margin="0,3" VerticalAlignment="Center"
+                      HorizontalAlignment="Left"
+                      ItemsSource="{Binding ColorSchemeOptions}"
+                      SelectedValuePath="Id"
+                      SelectedValue="{Binding ColorScheme}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate DataType="{x:Type themes:ColorSchemeInfo}">
+                        <StackPanel Orientation="Horizontal">
+                            <!-- Образец: фон страницы вкладок этой схемы. -->
+                            <Border Width="28" Height="16" Margin="0,0,8,0"
+                                    Background="{Binding Preview}"
+                                    BorderBrush="#8A8A8A" BorderThickness="1"
+                                    CornerRadius="2" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </Grid>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="16,4,16,14">
+            <StackPanel.Resources>
+                <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                    <Setter Property="MinWidth" Value="96" />
+                    <Setter Property="MinHeight" Value="30" />
+                    <Setter Property="Margin" Value="6,0,0,0" />
+                </Style>
+            </StackPanel.Resources>
+            <Button Content="Значения по умолчанию" Command="{Binding ResetDefaultsCommand}" />
+            <Button Content="Отмена" IsCancel="True" />
+            <Button Content="Сохранить" IsDefault="True" Click="OnSave" />
+        </StackPanel>
+    </StackPanel>
+</Window>

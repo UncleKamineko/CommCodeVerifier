@@ -1,0 +1,76 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Полоса заголовка главного окна. -->
+    <LinearGradientBrush x:Key="Brush.TitleBar" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#E8F1FB" Offset="0" />
+        <GradientStop Color="#F7F9FC" Offset="1" />
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="Brush.TitleText" Color="#1F1F1F" />
+    <SolidColorBrush x:Key="Brush.TitleText.Inactive" Color="#8A8A8A" />
+    <SolidColorBrush x:Key="Brush.CaptionHover" Color="#1A000000" />
+    <SolidColorBrush x:Key="Brush.CaptionClose" Color="#E81123" />
+    
+    <!-- Заливки — те же цвета, что в «Коды для ручной проверки.xlsx» (BatchProcessor). -->
+    <SolidColorBrush x:Key="Brush.Fill.Red"    Color="#FF9999" />
+    <!-- пустой результат -->
+    <SolidColorBrush x:Key="Brush.Fill.Yellow" Color="#FFFF99" />
+    <!-- остаток в конце -->
+    <SolidColorBrush x:Key="Brush.Fill.Orange" Color="#FFCC99" />
+    <!-- подозрительный результат -->
+    <SolidColorBrush x:Key="Brush.Fill.Blue"   Color="#8DB4E2" />
+    <!-- удалено слово в начале -->
+    <SolidColorBrush x:Key="Brush.Fill.Violet" Color="#E2CCFF" />
+    <!-- сбой обработки -->
+
+    <!-- Символы, затронутые правилами (красный полужирный, как в отчёте). -->
+    <SolidColorBrush x:Key="Brush.Changed" Color="#FF0000" />
+    <!-- Фон затронутых правилами пробелов и табуляций: красный пробел не виден. -->
+    <SolidColorBrush x:Key="Brush.ChangedSpace" Color="#40FF0000" />
+
+    <!-- «ВНИМАНИЕ! Перед копированием в 1С…» — цвет из WinForms (160, 60, 0). -->
+    <SolidColorBrush x:Key="Brush.Caution" Color="#A03C00" />
+
+    <!-- Предупреждения (дубликаты, ошибки) и подсказки. -->
+    <SolidColorBrush x:Key="Brush.Warning" Color="#C00000" />
+    <SolidColorBrush x:Key="Brush.Hint"    Color="DimGray" />
+
+    <!-- Вкладки-кнопки. -->
+    <SolidColorBrush x:Key="Brush.Tab.Normal"         Color="#F0F0F0" />
+    <SolidColorBrush x:Key="Brush.Tab.Hover"          Color="#E5F1FB" />
+    <SolidColorBrush x:Key="Brush.Tab.Selected"       Color="#CCE4F7" />
+    <SolidColorBrush x:Key="Brush.Tab.Border"         Color="#ADADAD" />
+    <SolidColorBrush x:Key="Brush.Tab.SelectedBorder" Color="#0078D7" />
+
+    <!-- Фон окна и страницы вкладок (значения светлой схемы; см. ColorSchemes.xaml). -->
+    <SolidColorBrush x:Key="Brush.Window.Background" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="Brush.Page.Background"   Color="#FFFFFF" />
+    <SolidColorBrush x:Key="Brush.Page.Border"       Color="#ACACAC" />
+
+    <!-- Фон блоков вкладки «Настройки анализа» -->
+    <SolidColorBrush x:Key="Brush.Group.Rules" Color="#F6F8FC" />
+    <SolidColorBrush x:Key="Brush.Group.Files" Color="#F8FCF6" />
+    <SolidColorBrush x:Key="Brush.Group.Text"  Color="#FCFAF4" />
+
+    <!-- Путь к выбранному файлу конфигурации, если файл существует. -->
+    <SolidColorBrush x:Key="Brush.Path.Custom" Color="#005A00" />
+
+    <!-- Значок предупреждения в окне о несохранённых изменениях. -->
+    <SolidColorBrush x:Key="Brush.WarningIcon" Color="#E8A200" />
+
+    <!-- Сводка проверки ИМ при ошибочных признаках -->
+    <SolidColorBrush x:Key="Brush.Summary.Wrong" Color="#960000" />
+    
+    <!-- Кнопки: обычная и акцентная (зелёная). -->
+    <LinearGradientBrush x:Key="Brush.Button.Normal" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#FDFDFD" Offset="0" />
+        <GradientStop Color="#E4E4E4" Offset="1" />
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="Brush.Button.Border" Color="#ADADAD" />
+    <SolidColorBrush x:Key="Brush.Button.BorderHover" Color="#0078D7" />
+
+    <LinearGradientBrush x:Key="Brush.Button.Accent" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#C4F5AE" Offset="0" />
+        <GradientStop Color="#86D466" Offset="1" />
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="Brush.Button.AccentBorder" Color="#5FA845" />
+</ResourceDictionary>

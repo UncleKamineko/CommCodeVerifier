@@ -1,0 +1,168 @@
+<UserControl x:Class="CommCodeVerifier.Wpf.Views.ImCheckView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:CommCodeVerifier.Wpf.ViewModels">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="14">
+            <StackPanel.Resources>
+                <Style x:Key="RowCaption" TargetType="TextBlock">
+                    <Setter Property="VerticalAlignment" Value="Center" />
+                    <Setter Property="Margin" Value="0,0,10,0" />
+                </Style>
+            </StackPanel.Resources>
+
+            <TextBlock Style="{StaticResource HeaderText}" Margin="0,4,0,8"
+                       Text="Выберите вариант анализа корректности признака доступности в ИМ" />
+
+            <!-- ================= отдельный файл ================= -->
+            <WrapPanel Margin="0,4">
+                <TextBlock Style="{StaticResource RowCaption}" Text="Проверка по отдельному файлу" />
+                <Button Content="Загрузить файл" Command="{Binding LoadFileCommand}" />
+            </WrapPanel>
+
+            <TextBlock Text="{Binding Error}" Foreground="Red" TextWrapping="Wrap" Margin="0,4"
+                       Visibility="{Binding HasError, Converter={StaticResource BoolToVis}}" />
+
+            <Button Content="Открыть папку с результатами" HorizontalAlignment="Left" Margin="0,4"
+                    ToolTip="{Binding SingleResultsTooltip}"
+                    Command="{Binding OpenSingleResultsCommand}"
+                    Visibility="{Binding HasSingleResults, Converter={StaticResource BoolToVis}}" Background="{DynamicResource Brush.Button.Accent}" FontWeight="Bold" />
+
+            <Separator Margin="0,8" Background="Black" BorderBrush="Black" BorderThickness="3" />
+
+            <!-- ================= папка групповой обработки ================= -->
+            <WrapPanel Margin="0,4">
+                <TextBlock Style="{StaticResource RowCaption}"
+                           Text="Проверка по файлам анализа вкладки групповой обработки" />
+                <Button Content="Папка для проверки" Command="{Binding PickFolderCommand}" />
+            </WrapPanel>
+
+            <TextBlock Text="{Binding ChosenText}" TextWrapping="Wrap" Margin="0,4">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Foreground" Value="{DynamicResource Brush.Hint}" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding ChosenState}" Value="{x:Static vm:ChosenFolderState.Chosen}">
+                                <Setter Property="Foreground" Value="{DynamicResource Brush.Path.Custom}" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding ChosenState}" Value="{x:Static vm:ChosenFolderState.None}">
+                                <Setter Property="Foreground" Value="Red" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+
+            <Button Content="Запустить проверку" HorizontalAlignment="Left" Margin="0,4"
+                    Command="{Binding RunFolderCommand}" />
+            <Button Content="Открыть папку с результатами"
+                        ToolTip="Открыть проверенную папку с результатами групповой обработки"
+                        Command="{Binding OpenBatchResultsCommand}"
+                        Visibility="{Binding HasBatchResults, Converter={StaticResource BoolToVis}}" Width="Auto" HorizontalAlignment="Left" Background="{DynamicResource Brush.Button.Accent}" FontWeight="Bold" />
+
+            <TextBlock Style="{StaticResource HintText}" Margin="0,4"
+                       Text="{x:Static vm:ImCheckViewModel.NoteText}" Foreground="Black" />
+
+            <Separator Margin="0,8" Background="Black" />
+
+            <!-- ================= файлы правил ================= -->
+            <GroupBox Padding="12,8,12,12" Margin="0,4" BorderBrush="Black" BorderThickness="3">
+                <GroupBox.Header>
+                    <TextBlock Text="Файлы правил проверки для ИМ" FontWeight="Bold" />
+                </GroupBox.Header>
+                <StackPanel>
+                    <TextBlock TextWrapping="Wrap" MaxWidth="680" HorizontalAlignment="Left" Margin="0,0,0,8"
+                               Text="Если вы хотите использовать файлы, отличные от файлов по умолчанию, выберите их расположение ниже" />
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <!-- Auto: ширина по самой длинной подписи, растёт вместе со шрифтом. -->
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.Resources>
+                            <!-- Цвет пути: свой файл — зелёный, не найден или нет правил — красный, по умолчанию — серый. -->
+                            <Style x:Key="RulesPathText" TargetType="TextBlock">
+                                <Setter Property="Margin" Value="8,0,0,4" />
+                                <Setter Property="VerticalAlignment" Value="Center" />
+                                <Setter Property="TextWrapping" Value="Wrap" />
+                                <Setter Property="Foreground" Value="{DynamicResource Brush.Hint}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding State}" Value="{x:Static vm:ImRulesFileState.Ok}">
+                                        <Setter Property="Foreground" Value="{DynamicResource Brush.Path.Custom}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding State}" Value="{x:Static vm:ImRulesFileState.Missing}">
+                                        <Setter Property="Foreground" Value="Red" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding State}" Value="{x:Static vm:ImRulesFileState.NoRules}">
+                                        <Setter Property="Foreground" Value="Red" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Grid.Resources>
+
+                        <!-- Правила проверки комм. кода -->
+                        <Button Grid.Row="0" Grid.Column="0"
+                                Content="Файл «Правила проверки комм. кода для ИМ»"
+                                HorizontalAlignment="Stretch"
+                                Margin="0,0,0,4"
+                                Command="{Binding PickRulesFileCommand}"
+                                CommandParameter="{Binding CodeRules}" />
+                        <TextBlock Grid.Row="0" Grid.Column="1"
+                                   DataContext="{Binding CodeRules}"
+                                   Style="{StaticResource RulesPathText}"
+                                   Text="{Binding DisplayText}" />
+
+                        <!-- Правила проверки артикула -->
+                        <Button Grid.Row="1" Grid.Column="0"
+                                Content="Файл «Правила проверки артикула для ИМ»"
+                                HorizontalAlignment="Stretch"
+                                Margin="0,0,0,4"
+                                Command="{Binding PickRulesFileCommand}"
+                                CommandParameter="{Binding ArticleRules}" />
+                        <TextBlock Grid.Row="1" Grid.Column="1"
+                                   DataContext="{Binding ArticleRules}"
+                                   Style="{StaticResource RulesPathText}"
+                                   Text="{Binding DisplayText}" />
+                    </Grid>
+
+                    <WrapPanel Margin="0,6,0,0">
+                        <Button Content="Вернуть файлы по умолчанию" Command="{Binding ResetRulesFilesCommand}"
+                                Margin="0,0,8,4" />
+                        <Button Content="Открыть папку конфигураций" Command="{Binding OpenConfigFolderCommand}"
+                                Margin="0,0,8,4" />
+                    </WrapPanel>
+                </StackPanel>
+            </GroupBox>
+
+            <!-- ================= прогресс и сводка ================= -->
+            <WrapPanel Margin="0,8,0,4">
+                <ProgressBar Width="618" Height="20" Minimum="0" Maximum="100"
+                             Value="{Binding Progress, Mode=OneWay}"
+                             IsIndeterminate="{Binding IsIndeterminate, Mode=OneWay}" />
+                <TextBlock Text="{Binding Status}" Foreground="DarkGreen" TextWrapping="Wrap"
+                           VerticalAlignment="Center" Margin="10,0,10,0" />
+            </WrapPanel>
+
+            <TextBox Text="{Binding Summary, Mode=OneWay}"
+                     IsReadOnly="True" BorderThickness="0" Background="Transparent"
+                     TextWrapping="Wrap" Margin="0,4"
+                     Visibility="{Binding HasSummary, Converter={StaticResource BoolToVis}}">
+                <TextBox.Style>
+                    <Style TargetType="TextBox">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding SummaryHasWrong}" Value="True">
+                                <Setter Property="Foreground" Value="{DynamicResource Brush.Summary.Wrong}" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBox.Style>
+            </TextBox>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

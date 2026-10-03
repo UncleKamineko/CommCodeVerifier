@@ -1,0 +1,33 @@
+{
+  "EnabledRules": [
+    "DecimalSeparator",
+    "TrimSpaces",
+    "ControlChars",
+    "DimensionX",
+    "ThreadDesignation",
+    "Dashes",
+    "SignificantWords",
+    "TrailingEnding",
+    "ArticleExclusion",
+    "HomoglyphLetters",
+    "ArticleExtraction",
+    "CatalogStartReview"
+  ],
+  "WordsFilePath": null,
+  "EndingsFilePath": null,
+  "ExclusionsFilePath": null,
+  "ForceDeleteWordsFilePath": null,
+  "CharMapFilePath": null,
+  "ConfigVersion": 0,
+  "CodeFontPx": 14,
+  "RulesFontPx": 14,
+  "SummaryFontPx": 14,
+  "ButtonFontPx": 14,
+  "TabTextFontPx": 18,
+  "Morphology": "Paradigms",
+  "Extra1CChars": "-()/,",
+  "CyrillicExceptions": "\u0422\u0412\u0421\u0420",
+  "EndingKeepSeries": "H71W-,H74H-,H74W-,DTH44W-,J41H-,HQ-,AOX-",
+  "ImRulesFilePath": null,
+  "ImArticleRulesFilePath": null
+}

@@ -1,0 +1,28 @@
+# Сборка
+bin/
+obj/
+publish/
+TestResults/
+*.binlog
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.rsuser
+
+# JetBrains Rider
+.idea/
+
+# NuGet
+*.nupkg
+packages/
+
+# Временные файлы Office (открытый xlsx)
+~$*
+
+# Результаты обработки при локальном запуске
+Результаты обработки/
+
+#чтобы git не трогал переводы строк в RTF
+*.rtf     binary

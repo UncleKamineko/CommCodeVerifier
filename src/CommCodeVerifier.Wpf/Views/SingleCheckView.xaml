@@ -1,0 +1,94 @@
+<UserControl x:Class="CommCodeVerifier.Wpf.Views.SingleCheckView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:CommCodeVerifier.Wpf.Controls">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="14">
+            <StackPanel.Resources>
+                <Style TargetType="FrameworkElement" x:Key="Row">
+                    <Setter Property="Margin" Value="0,4" />
+                </Style>
+            </StackPanel.Resources>
+
+            <TextBlock Style="{StaticResource HeaderText}" Text="Проверка ОДНОГО коммерческого кода" Margin="0,4" FontSize="22" />
+            <TextBlock Text="Введите коммерческий код для проверки" Margin="0,14,0,4" FontWeight="Bold" />
+
+            <TextBox x:Name="InputBox"
+                     Style="{StaticResource CodeTextBox}"
+                     Text="{Binding Input, UpdateSourceTrigger=PropertyChanged}"
+                     AcceptsReturn="False"
+                     AcceptsTab="False"
+                     Margin="0,0,0,4">
+                <TextBox.InputBindings>
+                    <KeyBinding Key="Enter" Command="{Binding CheckCommand}" />
+                </TextBox.InputBindings>
+            </TextBox>
+
+            <!-- Исходный код после проверки: изменённые символы — красным полужирным. -->
+            <StackPanel Margin="0,0,0,4"
+                        Visibility="{Binding HasHighlight, Converter={StaticResource BoolToVis}}">
+                <TextBlock Style="{StaticResource HintText}"
+                           Text="Символы, затронутые правилами, выделены красным:" />
+                <controls:HighlightedTextBlock Style="{StaticResource CodeText}"
+                                               Segments="{Binding Highlight}"
+                                               MarkBrush="{DynamicResource Brush.Changed}"
+                                               MarkSpaceBrush="{DynamicResource Brush.ChangedSpace}"
+                                               Margin="3,2,0,0" />
+            </StackPanel>
+
+            <Button Content="Проверить на соответствие правилам"
+        Command="{Binding CheckCommand}"
+        Style="{StaticResource AccentButton}"
+        HorizontalAlignment="Left"
+        MaxWidth="720"
+        Margin="0,4" Click="Button_Click_1" FontFamily="Calibri" >
+                <Button.Background>
+                    <LinearGradientBrush EndPoint="0,1">
+                        <GradientStop Color="#FFC4F5AE"/>
+                        <GradientStop Color="#FF77A466" Offset="1"/>
+                    </LinearGradientBrush>
+                </Button.Background>
+            </Button>
+
+            <!-- Применённые правила и сообщение о пустом результате. -->
+            <Border BorderBrush="{x:Static SystemColors.ControlDarkBrush}"
+                    BorderThickness="1"
+                    Padding="8"
+                    MinHeight="40"
+                    Margin="0,4">
+                <StackPanel>
+                    <ItemsControl ItemsSource="{Binding AppliedRules}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Style="{StaticResource RulesText}" Text="{Binding}" Margin="0,1" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Text="{Binding EmptyMessage}"
+                               Foreground="Red"
+                               FontWeight="Bold"
+                               FontSize="{DynamicResource Font.RulesEmphasis}"
+                               TextWrapping="Wrap"
+                               Margin="0,4,0,0"
+                               Visibility="{Binding HasEmptyMessage, Converter={StaticResource BoolToVis}}" />
+                </StackPanel>
+            </Border>
+
+            <!-- Результат: виден, только если он не пустой. -->
+            <StackPanel Visibility="{Binding HasResult, Converter={StaticResource BoolToVis}}" Margin="0,20,0,0">
+                <TextBlock Text="Корректный коммерческий код" FontWeight="Bold" />
+                <TextBox Style="{StaticResource CodeTextBox}"
+                         Text="{Binding Result, Mode=OneWay}"
+                         IsReadOnly="True"
+                         IsReadOnlyCaretVisible="True"
+                         Background="White"
+                         Margin="0,0,0,4" />
+                <TextBlock Text="ВНИМАНИЕ! Перед копированием в 1С код надо визуально проверить на адекватность!"
+                           Foreground="{DynamicResource Brush.Caution}"
+                           TextWrapping="Wrap"
+                           Margin="0,4" />
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

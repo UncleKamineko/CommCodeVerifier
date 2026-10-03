@@ -1,0 +1,22 @@
+# Переводы строк нормализуются автоматически.
+* text=auto
+
+*.cs      text eol=crlf
+*.xaml    text eol=crlf
+*.csproj  text eol=crlf
+*.props   text eol=crlf
+*.pubxml  text eol=crlf
+*.sln     text eol=crlf
+*.json    text eol=crlf
+*.md      text eol=crlf
+*.yml     text eol=lf
+
+# Двоичные файлы.
+*.xlsx    binary
+*.ico     binary
+*.png     binary
+
+# Тестовые данные хранятся байт в байт: в txt может быть CP1251,
+# а эталонные выходные файлы сравниваются с результатом.
+tests/**/Config/**  -text
+tests/**/Golden/**  -text

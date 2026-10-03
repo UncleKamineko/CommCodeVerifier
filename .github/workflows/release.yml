@@ -1,0 +1,41 @@
+name: Публикация релиза
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Тесты
+        run: dotnet test CommCodeVerifier.sln -c Release
+
+      - name: Публикация (один exe, .NET внутри)
+        shell: pwsh
+        run: |
+          $v = "${{ github.event.release.tag_name }}".TrimStart('v')
+          dotnet publish src/CommCodeVerifier.Wpf/CommCodeVerifier.Wpf.csproj `
+            -c Release -r win-x64 --self-contained true `
+            -p:PublishSingleFile=true `
+            -p:EnableCompressionInSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true `
+            -p:DebugType=none `
+            -p:Version=$v `
+            -o publish
+          Compress-Archive -Path publish/* -DestinationPath "CommCodeVerifier.v$v.zip"
+
+      - name: Прикрепить zip к релизу
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "${{ github.event.release.tag_name }}" (Get-ChildItem CommCodeVerifier.v*.zip)

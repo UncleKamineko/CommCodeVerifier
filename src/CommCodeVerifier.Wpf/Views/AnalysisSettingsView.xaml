@@ -1,0 +1,234 @@
+<UserControl x:Class="CommCodeVerifier.Wpf.Views.AnalysisSettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:CommCodeVerifier.Wpf.ViewModels">
+
+    <DockPanel>
+        
+        <!-- Нижняя панель: вне прокрутки, всегда видна. -->
+        <Border DockPanel.Dock="Bottom" Padding="14,9">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <TextBlock Text="{x:Static vm:AnalysisSettingsViewModel.LockedText}"
+                           Foreground="{DynamicResource Brush.Hint}"
+                           VerticalAlignment="Center" Margin="0,0,18,0"
+                           Visibility="{Binding IsLocked, Converter={StaticResource BoolToVis}}" />
+                <TextBlock Text="Изменения сохранены" Foreground="DarkGreen"
+                           VerticalAlignment="Center" Margin="0,0,18,0"
+                           Visibility="{Binding SavedVisible, Converter={StaticResource BoolToVis}}" />
+                <Button Content="Сохранить изменения" Command="{Binding SaveCommand}" />
+            </StackPanel>
+        </Border>
+
+        <ScrollViewer x:Name="OuterScroll"
+                      VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Margin="14">
+                <TextBlock Style="{StaticResource HeaderText}" Text="Настройки анализа" Margin="0,0,0,8" />
+
+                <!-- ================= а) применяемые правила ================= -->
+                <GroupBox Padding="12,8,12,12" Margin="0,0,0,8" BorderBrush="Black" BorderThickness="3">
+                    <GroupBox.Header>
+                        <TextBlock Text="Применяемые правила" FontSize="14" FontWeight="Bold" />
+                    </GroupBox.Header>
+                    <StackPanel>
+                        <ItemsControl ItemsSource="{Binding Rules}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type vm:RuleItem}">
+                                    <StackPanel>
+                                        <CheckBox Content="{Binding Name}" IsChecked="{Binding IsChecked}" Margin="0,2" />
+                                        <TextBlock Style="{StaticResource HintText}"
+                                                   Text="(правила «Удаление значащих слов» и «Удаление окончания» переключаются только совместно)"
+                                                   Margin="24,0,0,6"
+                                                   Visibility="{Binding ShowLinkedNote, Converter={StaticResource BoolToVis}}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <WrapPanel Margin="0,6,0,0">
+                            <Button Content="Выбрать всё" Command="{Binding SelectAllCommand}"
+                                    MaxWidth="190" Margin="0,0,8,4" />
+                            <Button Content="Снять отметку со всех" Command="{Binding SelectNoneCommand}"
+                                    MaxWidth="250" Margin="0,0,8,4" />
+                        </WrapPanel>
+
+                        <TextBlock Text="{Binding RulesWarning}" Foreground="Red" TextWrapping="Wrap"
+                                   Margin="0,8,0,0"
+                                   Visibility="{Binding HasRulesWarning, Converter={StaticResource BoolToVis}}" />
+
+                        <!-- дополнительные параметры обработки -->
+                        <TextBlock Text="Дополнительные параметры обработки:" FontWeight="Bold" Margin="0,10,0,4" FontSize="14" />
+                        <Grid Margin="12,0,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.Resources>
+                                <Style x:Key="ParamCaption" TargetType="TextBlock">
+                                    <Setter Property="Margin" Value="0,7,8,4" />
+                                    <Setter Property="VerticalAlignment" Value="Top" />
+                                </Style>
+                                <Style x:Key="ParamHint" TargetType="TextBlock" BasedOn="{StaticResource HintText}">
+                                    <Setter Property="Margin" Value="8,7,0,4" />
+                                    <Setter Property="VerticalAlignment" Value="Top" />
+                                </Style>
+                                <Style x:Key="ParamBox" TargetType="TextBox">
+                                    <Setter Property="Margin" Value="0,4" />
+                                    <Setter Property="Padding" Value="2" />
+                                    <Setter Property="VerticalAlignment" Value="Top" />
+                                    <Setter Property="HorizontalAlignment" Value="Left" />
+                                </Style>
+                            </Grid.Resources>
+
+                            <TextBlock Grid.Row="0" Style="{StaticResource ParamCaption}"
+                                       Text="Учитывать падежи и число значащих слов:" />
+                            <ComboBox Grid.Row="0" Grid.Column="1" Width="350" Margin="0,4"
+                                      HorizontalAlignment="Left"
+                                      ItemsSource="{Binding MorphologyOptions}"
+                                      SelectedIndex="{Binding MorphologyIndex}" />
+
+                            <TextBlock Grid.Row="1" Style="{StaticResource ParamCaption}"
+                                       Text="Доп. символы, допустимые в файле для 1С:" />
+                            <TextBox Grid.Row="1" Grid.Column="1" Style="{StaticResource ParamBox}" Width="130"
+                                     Text="{Binding Extra1CChars, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Grid.Row="1" Grid.Column="2" Style="{StaticResource ParamHint}"
+                                       Text="по умолчанию только цифры и A–Z" />
+
+                            <!-- Высота многострочных полей подстраивается под текст (TextWrapping). -->
+                            <TextBlock Grid.Row="2" Style="{StaticResource ParamCaption}"
+                                       Text="Неизменяемые сочетания кириллицы:" />
+                            <TextBox Grid.Row="2" Grid.Column="1" Style="{StaticResource ParamBox}" Width="350"
+                                     TextWrapping="Wrap"
+                                     Text="{Binding CyrillicExceptions, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Grid.Row="2" Grid.Column="2" Style="{StaticResource ParamHint}"
+                                       Text="через запятую, например ТВСР,НН" />
+
+                            <TextBlock Grid.Row="3" Style="{StaticResource ParamCaption}"
+                                       Text="Серии, для которых не удаляем окончания:" />
+                            <TextBox Grid.Row="3" Grid.Column="1" Style="{StaticResource ParamBox}" Width="350"
+                                     TextWrapping="Wrap"
+                                     Text="{Binding EndingKeepSeries, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Grid.Row="3" Grid.Column="2" Style="{StaticResource ParamHint}"
+                                       Text="Перечислите серии номенклатуры, для которых необходимо сохранить окончания, например H74H для сохранения полного кода H74H-16P DN50" />
+                        </Grid>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- ================= б) файлы конфигураций ================= -->
+                <GroupBox Padding="12,8,12,12" Margin="0,0,0,8" BorderBrush="Black" BorderThickness="3">
+                    <GroupBox.Header>
+                        <TextBlock TextWrapping="Wrap"
+                                   Text="Файлы конфигураций («Значащие слова.txt», «Удаляемые_окончания.txt», «Артикулы_исключения.xlsx», «Слова удаления кода.txt»)" FontSize="14" FontWeight="Bold" />
+                    </GroupBox.Header>
+                    <StackPanel>
+                        <TextBlock TextWrapping="Wrap" MaxWidth="680" HorizontalAlignment="Left" Margin="0,0,0,8"
+                                   Text="Если вы хотите использовать файлы, отличные от файлов по умолчанию, выберите расположение соответствующих файлов ниже" />
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <!-- Auto: ширина по самой длинной подписи, растёт вместе со шрифтом. -->
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <Grid.Resources>
+                                    <!-- Кнопки одной ширины (по колонке), не уже 230. -->
+                                    <Style x:Key="FileButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                                        <Setter Property="HorizontalAlignment" Value="Stretch" />
+                                        <Setter Property="MinWidth" Value="230" />
+                                        <Setter Property="Margin" Value="0,0,0,4" />
+                                    </Style>
+                                    <!-- Цвет пути: свой файл — зелёный, не найден — красный, по умолчанию — серый. -->
+                                    <Style x:Key="FilePathText" TargetType="TextBlock">
+                                        <Setter Property="Margin" Value="8,0,0,4" />
+                                        <Setter Property="VerticalAlignment" Value="Center" />
+                                        <Setter Property="TextWrapping" Value="Wrap" />
+                                        <Setter Property="Foreground" Value="{DynamicResource Brush.Hint}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding State}" Value="{x:Static vm:ConfigFileState.Ok}">
+                                                <Setter Property="Foreground" Value="{DynamicResource Brush.Path.Custom}" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding State}" Value="{x:Static vm:ConfigFileState.Missing}">
+                                                <Setter Property="Foreground" Value="Red" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Grid.Resources>
+
+                                <!-- Значащие слова -->
+                                <Button Grid.Row="0" Grid.Column="0" Style="{StaticResource FileButton}"
+                                    Content="Значащие слова"
+                                    Command="{Binding PickFileCommand}"
+                                    CommandParameter="{Binding WordsFile}" />
+                                <TextBlock Grid.Row="0" Grid.Column="1" Style="{StaticResource FilePathText}"
+                                       DataContext="{Binding WordsFile}"
+                                       Text="{Binding DisplayText}" />
+
+                                <!-- Удаляемые окончания -->
+                                <Button Grid.Row="1" Grid.Column="0" Style="{StaticResource FileButton}"
+                                    Content="Удаляемые окончания"
+                                    Command="{Binding PickFileCommand}"
+                                    CommandParameter="{Binding EndingsFile}" />
+                                <TextBlock Grid.Row="1" Grid.Column="1" Style="{StaticResource FilePathText}"
+                                       DataContext="{Binding EndingsFile}"
+                                       Text="{Binding DisplayText}" />
+
+                                <!-- Артикулы-исключения -->
+                                <Button Grid.Row="2" Grid.Column="0" Style="{StaticResource FileButton}"
+                                    Content="Артикулы-исключения"
+                                    Command="{Binding PickFileCommand}"
+                                    CommandParameter="{Binding ExclusionsFile}" />
+                                <TextBlock Grid.Row="2" Grid.Column="1" Style="{StaticResource FilePathText}"
+                                       DataContext="{Binding ExclusionsFile}"
+                                       Text="{Binding DisplayText}" />
+
+                                <!-- Слова удаления кода -->
+                                <Button Grid.Row="3" Grid.Column="0" Style="{StaticResource FileButton}"
+                                    Content="Слова удаления кода"
+                                    Command="{Binding PickFileCommand}"
+                                    CommandParameter="{Binding ForceDeleteFile}" />
+                                <TextBlock Grid.Row="3" Grid.Column="1" Style="{StaticResource FilePathText}"
+                                       DataContext="{Binding ForceDeleteFile}"
+                                       Text="{Binding DisplayText}" />
+                            </Grid>
+
+                        <WrapPanel Margin="0,6,0,0">
+                            <Button Content="Вернуть файлы по умолчанию" Command="{Binding ResetFilesCommand}"
+                                    MaxWidth="320" Margin="0,0,8,4" />
+                            <Button Content="Открыть папку конфигураций" Command="{Binding OpenConfigFolderCommand}"
+                                    MaxWidth="320" Margin="0,0,8,4" />
+                        </WrapPanel>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- ================= в) текст правил ================= -->
+                <GroupBox Padding="12,8,12,12" BorderBrush="Black" BorderThickness="3">
+                    <GroupBox.Header>
+                        <TextBlock Text="Правила проверки комм. кодов" FontSize="14" FontWeight="Bold" />
+                    </GroupBox.Header>
+                    <!-- Своей прокрутки нет: блок растягивается под весь текст, прокрутка одна на вкладку. -->
+                    <TextBox Text="{Binding RulesText, Mode=OneWay}"
+                             IsReadOnly="True"
+                             TextWrapping="Wrap"
+                             Background="White"
+                             IsTabStop="False"
+                             Padding="2"
+                             VerticalScrollBarVisibility="Disabled"
+                             HorizontalScrollBarVisibility="Disabled" />
+                </GroupBox>
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

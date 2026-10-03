@@ -1,0 +1,115 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!-- Цветовые схемы интерфейса.
+         Новая схема: скопировать блок ResourceDictionary, задать уникальный x:Key,
+         Name и цвета, добавить ключ в Schemes.Order.
+         Применяются все ключи «Brush.*» — схема может перекрасить любую кисть программы. -->
+
+    <!-- Порядок схем в списке выбора. -->
+    <x:Array x:Key="Schemes.Order" Type="sys:String">
+        <sys:String>Light</sys:String>
+        <sys:String>Blue</sys:String>
+        <sys:String>Green</sys:String>
+        <sys:String>Beige</sys:String>
+        <sys:String>Gray</sys:String>
+        <sys:String>Lavender</sys:String>
+    </x:Array>
+
+    <!-- ================= Светлая (стандартная) ================= -->
+    <ResourceDictionary x:Key="Light">
+        <sys:String x:Key="Name">Светлая (стандартная)</sys:String>
+        <SolidColorBrush x:Key="Brush.Window.Background" Color="#FFFFFF" />
+        <SolidColorBrush x:Key="Brush.Page.Background"   Color="#FFFFFF" />
+        <SolidColorBrush x:Key="Brush.Page.Border"       Color="#ACACAC" />
+        <SolidColorBrush x:Key="Brush.Tab.Normal"         Color="#F0F0F0" />
+        <SolidColorBrush x:Key="Brush.Tab.Hover"          Color="#E5F1FB" />
+        <SolidColorBrush x:Key="Brush.Tab.Selected"       Color="#CCE4F7" />
+        <SolidColorBrush x:Key="Brush.Tab.Border"         Color="#ADADAD" />
+        <SolidColorBrush x:Key="Brush.Tab.SelectedBorder" Color="#0078D7" />
+        <SolidColorBrush x:Key="Brush.Group.Rules" Color="#F6F8FC" />
+        <SolidColorBrush x:Key="Brush.Group.Files" Color="#F8FCF6" />
+        <SolidColorBrush x:Key="Brush.Group.Text"  Color="#FCFAF4" />
+    </ResourceDictionary>
+
+    <!-- ================= Голубая ================= -->
+    <ResourceDictionary x:Key="Blue">
+        <sys:String x:Key="Name">Голубая</sys:String>
+        <SolidColorBrush x:Key="Brush.Window.Background" Color="#E3EEF9" />
+        <SolidColorBrush x:Key="Brush.Page.Background"   Color="#F3F8FD" />
+        <SolidColorBrush x:Key="Brush.Page.Border"       Color="#9DB9D8" />
+        <SolidColorBrush x:Key="Brush.Tab.Normal"         Color="#DCE8F5" />
+        <SolidColorBrush x:Key="Brush.Tab.Hover"          Color="#C9DDF2" />
+        <SolidColorBrush x:Key="Brush.Tab.Selected"       Color="#A9C9EC" />
+        <SolidColorBrush x:Key="Brush.Tab.Border"         Color="#8FAFD3" />
+        <SolidColorBrush x:Key="Brush.Tab.SelectedBorder" Color="#2A6CB5" />
+        <SolidColorBrush x:Key="Brush.Group.Rules" Color="#EAF2FB" />
+        <SolidColorBrush x:Key="Brush.Group.Files" Color="#EEF6FB" />
+        <SolidColorBrush x:Key="Brush.Group.Text"  Color="#F4F7FB" />
+    </ResourceDictionary>
+
+    <!-- ================= Зелёная ================= -->
+    <ResourceDictionary x:Key="Green">
+        <sys:String x:Key="Name">Зелёная</sys:String>
+        <SolidColorBrush x:Key="Brush.Window.Background" Color="#E6F2E3" />
+        <SolidColorBrush x:Key="Brush.Page.Background"   Color="#F4FAF2" />
+        <SolidColorBrush x:Key="Brush.Page.Border"       Color="#A3C59A" />
+        <SolidColorBrush x:Key="Brush.Tab.Normal"         Color="#DDEDD8" />
+        <SolidColorBrush x:Key="Brush.Tab.Hover"          Color="#CCE5C4" />
+        <SolidColorBrush x:Key="Brush.Tab.Selected"       Color="#B2D8A6" />
+        <SolidColorBrush x:Key="Brush.Tab.Border"         Color="#94BB89" />
+        <SolidColorBrush x:Key="Brush.Tab.SelectedBorder" Color="#3E8E2F" />
+        <SolidColorBrush x:Key="Brush.Group.Rules" Color="#EDF6EA" />
+        <SolidColorBrush x:Key="Brush.Group.Files" Color="#F0F8EC" />
+        <SolidColorBrush x:Key="Brush.Group.Text"  Color="#F6F9F1" />
+    </ResourceDictionary>
+
+    <!-- ================= Бежевая ================= -->
+    <ResourceDictionary x:Key="Beige">
+        <sys:String x:Key="Name">Бежевая</sys:String>
+        <SolidColorBrush x:Key="Brush.Window.Background" Color="#F5EFE4" />
+        <SolidColorBrush x:Key="Brush.Page.Background"   Color="#FBF8F2" />
+        <SolidColorBrush x:Key="Brush.Page.Border"       Color="#CBB99A" />
+        <SolidColorBrush x:Key="Brush.Tab.Normal"         Color="#EFE6D6" />
+        <SolidColorBrush x:Key="Brush.Tab.Hover"          Color="#E8DABF" />
+        <SolidColorBrush x:Key="Brush.Tab.Selected"       Color="#DCC7A0" />
+        <SolidColorBrush x:Key="Brush.Tab.Border"         Color="#C2AE8C" />
+        <SolidColorBrush x:Key="Brush.Tab.SelectedBorder" Color="#A0702A" />
+        <SolidColorBrush x:Key="Brush.Group.Rules" Color="#F7F2E8" />
+        <SolidColorBrush x:Key="Brush.Group.Files" Color="#F5F5EA" />
+        <SolidColorBrush x:Key="Brush.Group.Text"  Color="#FAF4E8" />
+    </ResourceDictionary>
+
+    <!-- ================= Серая ================= -->
+    <ResourceDictionary x:Key="Gray">
+        <sys:String x:Key="Name">Серая</sys:String>
+        <SolidColorBrush x:Key="Brush.Window.Background" Color="#E9EAEC" />
+        <SolidColorBrush x:Key="Brush.Page.Background"   Color="#F6F6F7" />
+        <SolidColorBrush x:Key="Brush.Page.Border"       Color="#B4B6BA" />
+        <SolidColorBrush x:Key="Brush.Tab.Normal"         Color="#E1E2E5" />
+        <SolidColorBrush x:Key="Brush.Tab.Hover"          Color="#D3D5D9" />
+        <SolidColorBrush x:Key="Brush.Tab.Selected"       Color="#BEC1C7" />
+        <SolidColorBrush x:Key="Brush.Tab.Border"         Color="#A7AAB0" />
+        <SolidColorBrush x:Key="Brush.Tab.SelectedBorder" Color="#4A5160" />
+        <SolidColorBrush x:Key="Brush.Group.Rules" Color="#F0F1F3" />
+        <SolidColorBrush x:Key="Brush.Group.Files" Color="#EFF1EF" />
+        <SolidColorBrush x:Key="Brush.Group.Text"  Color="#F3F2EF" />
+    </ResourceDictionary>
+
+    <!-- ================= Лавандовая ================= -->
+    <ResourceDictionary x:Key="Lavender">
+        <sys:String x:Key="Name">Лавандовая</sys:String>
+        <SolidColorBrush x:Key="Brush.Window.Background" Color="#EEE9F6" />
+        <SolidColorBrush x:Key="Brush.Page.Background"   Color="#F8F6FC" />
+        <SolidColorBrush x:Key="Brush.Page.Border"       Color="#BDB0D6" />
+        <SolidColorBrush x:Key="Brush.Tab.Normal"         Color="#E6DFF2" />
+        <SolidColorBrush x:Key="Brush.Tab.Hover"          Color="#D9CDEE" />
+        <SolidColorBrush x:Key="Brush.Tab.Selected"       Color="#C6B4E6" />
+        <SolidColorBrush x:Key="Brush.Tab.Border"         Color="#AE9FCB" />
+        <SolidColorBrush x:Key="Brush.Tab.SelectedBorder" Color="#6B4BA8" />
+        <SolidColorBrush x:Key="Brush.Group.Rules" Color="#F2EEF9" />
+        <SolidColorBrush x:Key="Brush.Group.Files" Color="#F0F4F6" />
+        <SolidColorBrush x:Key="Brush.Group.Text"  Color="#F7F3F8" />
+    </ResourceDictionary>
+</ResourceDictionary>

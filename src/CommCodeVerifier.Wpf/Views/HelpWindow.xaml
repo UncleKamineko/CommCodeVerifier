@@ -1,0 +1,41 @@
+<Window x:Class="CommCodeVerifier.Wpf.Views.HelpWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Справка по программе"
+        Width="880" Height="640"
+        MinWidth="560" MinHeight="420"
+        WindowStartupLocation="CenterScreen"
+        FontFamily="Segoe UI"
+        FontSize="{DynamicResource Font.Text}"
+        TextOptions.TextFormattingMode="Display"
+        UseLayoutRounding="True">
+    <DockPanel>
+        <WrapPanel DockPanel.Dock="Top"
+                   Background="{x:Static SystemColors.ControlBrush}"
+                   Margin="0">
+            <Button x:Name="FolderButton"
+                    Content="Открыть папку с файлом справки"
+                    Margin="8,6,8,6"
+                    Click="OnOpenFolder" />
+            <Button Content="Обновить"
+                    Margin="0,6,8,6"
+                    Click="OnReload" />
+        </WrapPanel>
+
+        <Border DockPanel.Dock="Bottom" Height="22"
+                Background="{x:Static SystemColors.ControlBrush}">
+            <TextBlock x:Name="StatusText"
+                       Margin="8,0"
+                       VerticalAlignment="Center"
+                       TextTrimming="CharacterEllipsis"
+                       Foreground="{DynamicResource Brush.Hint}" />
+        </Border>
+
+        <FlowDocumentScrollViewer x:Name="Viewer"
+                                  Background="White"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  IsToolBarVisible="False"
+                                  MinZoom="50" MaxZoom="300" Zoom="100" />
+    </DockPanel>
+</Window>

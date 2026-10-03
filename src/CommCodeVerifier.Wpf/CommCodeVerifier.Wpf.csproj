@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net8.0-windows</TargetFramework>
+        <UseWPF>true</UseWPF>
+        <AssemblyName>CommCodeVerifier</AssemblyName>
+        <RootNamespace>CommCodeVerifier.Wpf</RootNamespace>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+        <!-- Только русские ресурсы .NET: меньше размер сборки с .NET внутри. -->
+        <SatelliteResourceLanguages>ru</SatelliteResourceLanguages>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\CommCodeVerifier.Core\CommCodeVerifier.Core.csproj" />
+
+    </ItemGroup>
+    <!-- Справка: Ресурсы\Help.rtf копируется рядом с exe при сборке и публикации.
+       ExcludeFromSingleFile — файл лежит отдельно, его можно заменить без пересборки. -->
+    <ItemGroup>
+        <None Include="Ресурсы\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
+    </ItemGroup>
+    
+    <!-- Debug: снимок конфигурации из тестов кладётся рядом с exe как «Файлы конфигурации»,
+       чтобы при отладке программа работала на тех же данных, что и тесты.
+       PreserveNewest: файлы, изменённые программой при отладке, не перезаписываются,
+       пока не изменится сам снимок. В Release и публикацию не попадает. -->
+    <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+        <None Include="..\..\tests\CommCodeVerifier.Core.Tests\Config\**\*" Exclude="..\..\tests\CommCodeVerifier.Core.Tests\Config\settings.json" Link="Файлы конфигурации\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+    </ItemGroup>
+    <ItemGroup>
+      <None Remove="Elegantthemes-Beautiful-Flat.png" />
+      <None Remove="Elegantthemes-Softies-Clipboard.ico" />
+    </ItemGroup>
+    <ItemGroup>
+      <Folder Include="Ресурсы\" />
+    </ItemGroup>
+    <ItemGroup>
+      <Resource Include="Elegantthemes-Beautiful-Flat.png" />
+      <Resource Include="Elegantthemes-Softies-Clipboard.ico" />
+    </ItemGroup>
+
+</Project>

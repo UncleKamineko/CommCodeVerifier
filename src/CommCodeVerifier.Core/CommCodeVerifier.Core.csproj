@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Логика обработки. Обычный net8.0, без WinForms и WPF:
+       любая зависимость от интерфейса — ошибка компиляции. -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>CommCodeVerifier.Core</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ClosedXML" Version="0.102.2" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="8.0.0" />
+  </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="CommCodeVerifier.Core.Tests" />
+        <InternalsVisibleTo Include="CommCodeVerifier" />
+    </ItemGroup>
+
+</Project>

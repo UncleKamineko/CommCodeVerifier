@@ -1,0 +1,212 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="clr-namespace:CommCodeVerifier.Wpf.Controls">
+
+    <!-- ================= кнопки заголовка окна ================= -->
+    <Style x:Key="CaptionButton" TargetType="Button">
+        <Setter Property="Width" Value="46" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="FontFamily" Value="Segoe Fluent Icons, Segoe MDL2 Assets" />
+        <Setter Property="FontSize" Value="10" />
+        <Setter Property="Foreground" Value="{DynamicResource Brush.TitleText}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Focusable" Value="False" />
+        <Setter Property="WindowChrome.IsHitTestVisibleInChrome" Value="True" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Bd" Background="{TemplateBinding Background}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Brush.CaptionHover}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="CaptionCloseButton" TargetType="Button" BasedOn="{StaticResource CaptionButton}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Bd" Background="{TemplateBinding Background}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Brush.CaptionClose}" />
+                            <Setter Property="Foreground" Value="White" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <!-- ================= конвертеры ================= -->
+    <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    <controls:CountToVisibilityConverter x:Key="CountToVis" />
+
+    <!-- ================= радиусы скругления ================= -->
+    <CornerRadius x:Key="Radius.Button">6</CornerRadius>
+    <CornerRadius x:Key="Radius.Tab">6</CornerRadius>
+
+    <!-- ================= кнопки ================= -->
+    <!-- Свой шаблон: скругление (controls:ButtonAssist.CornerRadius) и фон, который
+         сохраняется при наведении и нажатии (стандартный шаблон WPF его подменяет). -->
+    <Style TargetType="Button">
+        <Setter Property="FontSize" Value="{DynamicResource Font.Button}" />
+        <Setter Property="Padding" Value="10,3" />
+        <Setter Property="MinHeight" Value="24" />
+        <Setter Property="Background" Value="{DynamicResource Brush.Button.Normal}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Brush.Button.Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Foreground" Value="{x:Static SystemColors.ControlTextBrush}" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="controls:ButtonAssist.CornerRadius" Value="{DynamicResource Radius.Button}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid SnapsToDevicePixels="True">
+                        <Border x:Name="Bd"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{TemplateBinding controls:ButtonAssist.CornerRadius}" />
+                        <!-- Подсветка поверх фона: светлее при наведении, темнее при нажатии. -->
+                        <Border x:Name="Overlay"
+                                Background="White" Opacity="0" IsHitTestVisible="False"
+                                CornerRadius="{TemplateBinding controls:ButtonAssist.CornerRadius}" />
+                        <ContentPresenter Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          RecognizesAccessKey="True" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Overlay" Property="Opacity" Value="0.35" />
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource Brush.Button.BorderHover}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Overlay" Property="Background" Value="Black" />
+                            <Setter TargetName="Overlay" Property="Opacity" Value="0.12" />
+                        </Trigger>
+                        <Trigger Property="IsDefaulted" Value="True">
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource Brush.Button.BorderHover}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.5" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Акцентная кнопка (зелёный градиент, полужирный текст). -->
+    <Style x:Key="AccentButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="Background" Value="{DynamicResource Brush.Button.Accent}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Brush.Button.AccentBorder}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+
+    <!-- Кнопки-значки в углу окна (значки — Themes/Icons.xaml). -->
+    <Style x:Key="IconButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+        <Setter Property="Width" Value="32" />
+        <Setter Property="Height" Value="26" />
+        <Setter Property="Padding" Value="0" />
+    </Style>
+
+    <!-- ================= текст ================= -->
+    <!-- Заголовки: на 1 больше текста вкладок, полужирные (как в WinForms 0.9.0). -->
+    <Style x:Key="HeaderText" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{DynamicResource Font.Header}" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Margin" Value="0,0,0,4" />
+    </Style>
+
+    <Style x:Key="HintText" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Hint}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <Style x:Key="WarningText" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource Brush.Warning}" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <!-- Поле кода и результат проверки. -->
+    <Style x:Key="CodeTextBox" TargetType="TextBox">
+        <Setter Property="FontFamily" Value="Consolas" />
+        <Setter Property="FontSize" Value="{DynamicResource Font.Code}" />
+        <Setter Property="Padding" Value="2" />
+    </Style>
+
+    <Style x:Key="CodeText" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="Consolas" />
+        <Setter Property="FontSize" Value="{DynamicResource Font.Code}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <Style x:Key="RulesText" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{DynamicResource Font.Rules}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <Style x:Key="SummaryText" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="Consolas" />
+        <Setter Property="FontSize" Value="{DynamicResource Font.Summary}" />
+    </Style>
+
+    <!-- ================= вкладки-кнопки ================= -->
+    <Style x:Key="MainTabItem" TargetType="TabItem">
+        <Setter Property="Margin" Value="0,0,6,4" />
+        <Setter Property="Padding" Value="12,4" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabItem">
+                    <Border x:Name="Bd"
+                            Background="{DynamicResource Brush.Tab.Normal}"
+                            BorderBrush="{DynamicResource Brush.Tab.Border}"
+                            BorderThickness="1"
+                            CornerRadius="{DynamicResource Radius.Tab}"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter ContentSource="Header"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          RecognizesAccessKey="True" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Brush.Tab.Hover}" />
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Brush.Tab.Selected}" />
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource Brush.Tab.SelectedBorder}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.5" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Увеличенный зазор перед вкладкой ИМ: 48 + 6 (правый отступ предыдущей вкладки) = 54. -->
+    <Style x:Key="MainTabItemWideGap" TargetType="TabItem" BasedOn="{StaticResource MainTabItem}">
+        <Setter Property="Margin" Value="48,0,6,4" />
+    </Style>
+
+    <Style x:Key="MainTabControl" TargetType="TabControl">
+        <Setter Property="ItemContainerStyle" Value="{StaticResource MainTabItem}" />
+        <Setter Property="Padding" Value="6" />
+        <Setter Property="Background" Value="{DynamicResource Brush.Page.Background}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Brush.Page.Border}" />
+    </Style>
+</ResourceDictionary>
