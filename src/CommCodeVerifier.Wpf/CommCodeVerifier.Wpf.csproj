@@ -9,7 +9,7 @@
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <!-- Только русские ресурсы .NET: меньше размер сборки с .NET внутри. -->
         <SatelliteResourceLanguages>ru</SatelliteResourceLanguages>
-        <ApplicationIcon>Elegantthemes-Softies-Clipboard.ico</ApplicationIcon>
+        <ApplicationIcon>Assets\Elegantthemes-Softies-Clipboard.ico</ApplicationIcon>
     </PropertyGroup>
 
     <ItemGroup>
@@ -23,8 +23,11 @@
     <!-- Справка: Ресурсы\Help.rtf копируется рядом с exe при сборке и публикации.
        ExcludeFromSingleFile — файл лежит отдельно, его можно заменить без пересборки. -->
     <ItemGroup>
-        <None Include="Ресурсы\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
-    </ItemGroup>
+        <!-- Справка: копируется рядом с exe, не встраивается — можно заменить без пересборки. -->
+        <None Include="Ресурсы\Help.rtf"
+              CopyToOutputDirectory="PreserveNewest"
+              CopyToPublishDirectory="PreserveNewest"
+              ExcludeFromSingleFile="true" />    </ItemGroup>
     
     <!-- Debug: снимок конфигурации из тестов кладётся рядом с exe как «Файлы конфигурации»,
        чтобы при отладке программа работала на тех же данных, что и тесты.
@@ -33,12 +36,11 @@
     <ItemGroup Condition="'$(Configuration)' == 'Debug'">
         <None Include="..\..\tests\CommCodeVerifier.Core.Tests\Config\**\*" Exclude="..\..\tests\CommCodeVerifier.Core.Tests\Config\settings.json" Link="Файлы конфигурации\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" Visible="false" />
     </ItemGroup>
+
     <ItemGroup>
-      <None Remove="Elegantthemes-Softies-Clipboard.ico" />
+        <Resource Include="Assets\Elegantthemes-Softies-Clipboard.ico" />
     </ItemGroup>
-    <ItemGroup>
-      <Content Include="Elegantthemes-Softies-Clipboard.ico" />
-    </ItemGroup>
+    
     <ItemGroup>
       <Folder Include="Ресурсы\" />
     </ItemGroup>
