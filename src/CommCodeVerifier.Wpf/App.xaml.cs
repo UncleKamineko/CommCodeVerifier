@@ -65,7 +65,16 @@ public partial class App : Application
 
     private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
-        MessageBox.Show("Непредвиденная ошибка:\n\n" + e.Exception.Message,
+        // Цепочка сообщений: настоящая причина обычно во вложенном исключении.
+        var messages = new List<string>();
+        for (var ex = e.Exception; ex != null; ex = ex.InnerException)
+            messages.Add(ex.Message);
+
+        string details = e.Exception.ToString();
+        try { Clipboard.SetText(details); } catch { /* буфер занят */ }
+
+        MessageBox.Show("Непредвиденная ошибка:\n\n" + string.Join("\n→ ", messages) +
+                        "\n\nПодробности скопированы в буфер обмена.",
             DialogService.AppTitle, MessageBoxButton.OK, MessageBoxImage.Error);
         e.Handled = true;
     }
