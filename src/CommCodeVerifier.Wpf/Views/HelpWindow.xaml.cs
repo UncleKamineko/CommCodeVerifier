@@ -11,7 +11,7 @@ using CommCodeVerifier.Wpf.Services;
 namespace CommCodeVerifier.Wpf.Views;
 
 /// <summary>
-/// Окно справки: Ресурсы\Help.rtf. Немодальное, одно (см. WindowService).
+/// Окно справки: Assets\Help.rtf. Немодальное, одно (см. WindowService).
 /// Esc — закрыть, Ctrl + колесо — масштаб.
 /// </summary>
 public partial class HelpWindow : Window
@@ -19,7 +19,7 @@ public partial class HelpWindow : Window
     public const string HelpFileName = "Help.rtf";
 
     /// Штатное расположение файла справки.
-    public static string HelpFolder => Path.Combine(AppPaths.BaseFolder, "Ресурсы");
+    public static string HelpFolder => Path.Combine(AppPaths.BaseFolder, "Assets");
     public static string HelpFilePath => Path.Combine(HelpFolder, HelpFileName);
 
     // Адреса в обычном тексте — как DetectUrls в WinForms.

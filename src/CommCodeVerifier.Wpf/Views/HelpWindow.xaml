@@ -12,15 +12,7 @@
     <DockPanel>
         <WrapPanel DockPanel.Dock="Top"
                    Background="{x:Static SystemColors.ControlBrush}"
-                   Margin="0">
-            <Button x:Name="FolderButton"
-                    Content="Открыть папку с файлом справки"
-                    Margin="8,6,8,6"
-                    Click="OnOpenFolder" />
-            <Button Content="Обновить"
-                    Margin="0,6,8,6"
-                    Click="OnReload" />
-        </WrapPanel>
+                   Margin="0"/>
 
         <Border DockPanel.Dock="Bottom" Height="22"
                 Background="{x:Static SystemColors.ControlBrush}">

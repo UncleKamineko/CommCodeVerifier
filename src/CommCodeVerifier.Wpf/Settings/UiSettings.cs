@@ -10,11 +10,11 @@ public sealed class UiSettings
     public const int MinFont = 6;
     public const int MaxFont = 48;
 
-    public const int DefaultButtonFont = 12;
-    public const int DefaultTabTextFont = 12;
-    public const int DefaultCodeFont = 12;
-    public const int DefaultRulesFont = 8;
-    public const int DefaultSummaryFont = 8;
+    public const int DefaultButtonFont = 16;
+    public const int DefaultTabTextFont = 18;
+    public const int DefaultCodeFont = 16;
+    public const int DefaultRulesFont = 16;
+    public const int DefaultSummaryFont = 16;
 
     /// Текст на вкладках (кроме кода, правил и сводки).
     public int TabTextFontPx { get; set; } = DefaultTabTextFont;
