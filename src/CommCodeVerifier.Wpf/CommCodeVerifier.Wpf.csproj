@@ -42,8 +42,5 @@
     <ItemGroup>
       <Folder Include="Ресурсы\" />
     </ItemGroup>
-    <ItemGroup>
-      <Resource Include="Elegantthemes-Softies-Clipboard.ico" />
-    </ItemGroup>
 
 </Project>
