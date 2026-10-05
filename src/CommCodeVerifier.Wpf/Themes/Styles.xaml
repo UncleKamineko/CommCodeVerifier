@@ -1,6 +1,7 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:controls="clr-namespace:CommCodeVerifier.Wpf.Controls">
+                    xmlns:controls="clr-namespace:CommCodeVerifier.Wpf.Controls"
+                    xmlns:vm="clr-namespace:CommCodeVerifier.Wpf.ViewModels">
 
     <!-- ================= кнопки заголовка окна ================= -->
     <Style x:Key="CaptionButton" TargetType="Button">
@@ -53,6 +54,33 @@
     <!-- ================= радиусы скругления ================= -->
     <CornerRadius x:Key="Radius.Button">6</CornerRadius>
     <CornerRadius x:Key="Radius.Tab">6</CornerRadius>
+    <!-- Скругляются только верхние углы вкладок. -->
+    <CornerRadius x:Key="Radius.Tab.TopOnly">6,6,0,0</CornerRadius>
+    <!-- Разделы: скруглены только верхний левый и нижний левый углы. -->
+    <!-- Радиус совпадает с радиусом вкладок. -->
+    <CornerRadius x:Key="Radius.Section">6,0,0,6</CornerRadius>
+
+    <!-- Фиксированные шрифты разделов.
+     Изменяются только здесь, отдельно для каждого раздела. -->
+    <Style x:Key="SectionCommercialCodeText"
+       TargetType="TextBlock">
+        <Setter Property="FontFamily"
+            Value="Segoe UI" />
+        <Setter Property="FontSize"
+            Value="16" />
+        <Setter Property="FontWeight"
+            Value="Normal" />
+    </Style>
+
+    <Style x:Key="SectionInternetShopText"
+       TargetType="TextBlock">
+        <Setter Property="FontFamily"
+            Value="Segoe UI" />
+        <Setter Property="FontSize"
+            Value="16" />
+        <Setter Property="FontWeight"
+            Value="Normal" />
+    </Style>
 
     <!-- ================= кнопки ================= -->
     <!-- Свой шаблон: скругление (controls:ButtonAssist.CornerRadius) и фон, который
@@ -164,33 +192,70 @@
     </Style>
 
     <!-- ================= вкладки-кнопки ================= -->
-    <Style x:Key="MainTabItem" TargetType="TabItem">
-        <Setter Property="Margin" Value="0,0,6,4" />
-        <Setter Property="Padding" Value="12,4" />
+
+    <Style x:Key="MainTabItem"
+       TargetType="TabItem">
+
+        <!-- Нижнего скругления нет.
+         Справа сохраняется небольшой интервал между вкладками. -->
+        <Setter Property="Margin"
+            Value="0,0,6,0" />
+
+        <Setter Property="Padding"
+            Value="12,4" />
+
+        <!-- Это относится к содержимому выбранной вкладки.
+         Оно должно быть выровнено слева и сверху. -->
+        <Setter Property="HorizontalContentAlignment"
+            Value="Left" />
+
+        <Setter Property="VerticalContentAlignment"
+            Value="Top" />
+
+        <Setter Property="SnapsToDevicePixels"
+            Value="True" />
+
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TabItem">
                     <Border x:Name="Bd"
-                            Background="{DynamicResource Brush.Tab.Normal}"
-                            BorderBrush="{DynamicResource Brush.Tab.Border}"
-                            BorderThickness="1"
-                            CornerRadius="{DynamicResource Radius.Tab}"
-                            Padding="{TemplateBinding Padding}">
+                        Background="{DynamicResource Brush.Tab.Normal}"
+                        BorderBrush="{DynamicResource Brush.Tab.Border}"
+                        BorderThickness="1"
+                        CornerRadius="{DynamicResource Radius.Tab.TopOnly}"
+                        Padding="{TemplateBinding Padding}"
+                        SnapsToDevicePixels="True">
+
+                        <!-- Центрируется только заголовок вкладки. -->
                         <ContentPresenter ContentSource="Header"
-                                          HorizontalAlignment="Center"
-                                          VerticalAlignment="Center"
-                                          RecognizesAccessKey="True" />
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"
+                                      RecognizesAccessKey="True" />
                     </Border>
+
                     <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Brush.Tab.Hover}" />
+                        <Trigger Property="IsMouseOver"
+                             Value="True">
+                            <Setter TargetName="Bd"
+                                Property="Background"
+                                Value="{DynamicResource Brush.Tab.Hover}" />
                         </Trigger>
-                        <Trigger Property="IsSelected" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource Brush.Tab.Selected}" />
-                            <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource Brush.Tab.SelectedBorder}" />
+
+                        <Trigger Property="IsSelected"
+                             Value="True">
+                            <Setter TargetName="Bd"
+                                Property="Background"
+                                Value="{DynamicResource Brush.Tab.Selected}" />
+
+                            <Setter TargetName="Bd"
+                                Property="BorderBrush"
+                                Value="{DynamicResource Brush.Tab.SelectedBorder}" />
                         </Trigger>
-                        <Trigger Property="IsEnabled" Value="False">
-                            <Setter Property="Opacity" Value="0.5" />
+
+                        <Trigger Property="IsEnabled"
+                             Value="False">
+                            <Setter Property="Opacity"
+                                Value="0.5" />
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -203,10 +268,164 @@
         <Setter Property="Margin" Value="48,0,6,4" />
     </Style>
 
-    <Style x:Key="MainTabControl" TargetType="TabControl">
-        <Setter Property="ItemContainerStyle" Value="{StaticResource MainTabItem}" />
-        <Setter Property="Padding" Value="6" />
-        <Setter Property="Background" Value="{DynamicResource Brush.Page.Background}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource Brush.Page.Border}" />
+    <Style x:Key="MainTabControl"
+       TargetType="TabControl">
+
+        <Setter Property="Background"
+            Value="{DynamicResource Brush.Page.Background}" />
+
+        <Setter Property="BorderBrush"
+            Value="{DynamicResource Brush.Page.Border}" />
+
+        <Setter Property="BorderThickness"
+            Value="1" />
+
+        <Setter Property="Padding"
+            Value="6,6,12,6" />
+
+        <Setter Property="ItemContainerStyle"
+            Value="{StaticResource MainTabItem}" />
+
+        <Setter Property="HorizontalContentAlignment"
+            Value="Stretch" />
+
+        <Setter Property="VerticalContentAlignment"
+            Value="Stretch" />
+
+        <Setter Property="SnapsToDevicePixels"
+            Value="True" />
+
+        <Setter Property="ClipToBounds"
+            Value="False" />
+
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabControl">
+                    <Grid ClipToBounds="False">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <!--
+                        Отдельная панель заголовков.
+                        Правый Margin резервирует место для правой границы
+                        последней вкладки.
+                    -->
+                        <TabPanel x:Name="HeaderPanel"
+                              Grid.Row="0"
+                              IsItemsHost="True"
+                              Margin="0,0,10,0"
+                              ClipToBounds="False"
+                              KeyboardNavigation.TabNavigation="Local"
+                              KeyboardNavigation.DirectionalNavigation="Cycle"
+                              SnapsToDevicePixels="True" />
+
+                        <!-- Рабочая область вкладки. -->
+                        <Border Grid.Row="1"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Padding="{TemplateBinding Padding}"
+                            ClipToBounds="False"
+                            SnapsToDevicePixels="True">
+
+                            <ContentPresenter x:Name="PART_SelectedContentHost"
+                                          ContentSource="SelectedContent"
+                                          ContentTemplate="{TemplateBinding SelectedContentTemplate}"
+                                          ContentStringFormat="{TemplateBinding SelectedContentStringFormat}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
+    <!-- ================= Разделы приложения ================= -->
+
+    <Style x:Key="SectionListBox"
+       TargetType="ListBox">
+        <Setter Property="Background"
+            Value="Transparent" />
+
+        <Setter Property="BorderThickness"
+            Value="0" />
+
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility"
+            Value="Disabled" />
+
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility"
+            Value="Disabled" />
+    </Style>
+
+    <Style x:Key="SectionListBoxItem"
+       TargetType="ListBoxItem">
+        <Setter Property="HorizontalContentAlignment"
+            Value="Stretch" />
+
+        <Setter Property="Padding"
+            Value="0" />
+
+        <Setter Property="Margin"
+            Value="0" />
+
+        <Setter Property="BorderThickness"
+            Value="0" />
+
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListBoxItem">
+                    <Border x:Name="SectionBorder"
+                        Background="{DynamicResource Brush.Tab.Normal}"
+                        BorderBrush="{DynamicResource Brush.Tab.Border}"
+                        BorderThickness="1"
+                        CornerRadius="{DynamicResource Radius.Section}"
+                        Padding="12,8">
+
+                        <ContentPresenter
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center" />
+                    </Border>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver"
+                             Value="True">
+                            <Setter TargetName="SectionBorder"
+                                Property="Background"
+                                Value="{DynamicResource Brush.Tab.Hover}" />
+                        </Trigger>
+
+                        <Trigger Property="IsSelected"
+                             Value="True">
+                            <Setter TargetName="SectionBorder"
+                                Property="Background"
+                                Value="{DynamicResource Brush.Tab.Selected}" />
+
+                            <Setter TargetName="SectionBorder"
+                                Property="BorderBrush"
+                                Value="{DynamicResource Brush.Tab.SelectedBorder}" />
+
+                            <Setter TargetName="SectionBorder"
+                                Property="BorderThickness"
+                                Value="1,1,0,1" />
+                        </Trigger>
+
+                        <Trigger Property="IsEnabled"
+                             Value="False">
+                            <Setter Property="Opacity"
+                                Value="0.5" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <DataTemplate x:Key="SectionItemTemplate"
+              DataType="{x:Type vm:NavigationSection}">
+        <TextBlock Text="{Binding Title}"
+               Style="{StaticResource SectionCommercialCodeText}" />
+    </DataTemplate>
 </ResourceDictionary>
