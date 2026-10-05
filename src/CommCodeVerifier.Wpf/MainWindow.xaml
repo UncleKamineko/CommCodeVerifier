@@ -164,14 +164,16 @@
                         <TabControl.ContentTemplate>
                             <DataTemplate>
                                 <ContentControl Content="{Binding ViewModel}"
-                        HorizontalContentAlignment="Stretch"
-                        VerticalContentAlignment="Stretch"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Stretch"
+                        HorizontalContentAlignment="Stretch"
+                        VerticalContentAlignment="Stretch"
+                        Width="Auto"
+                        Height="Auto"
                         ClipToBounds="False" />
                             </DataTemplate>
                         </TabControl.ContentTemplate>
-                        
+
                     </TabControl>
 
                     <!--
