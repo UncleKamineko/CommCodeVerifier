@@ -239,6 +239,16 @@ public sealed partial class AnalysisSettingsViewModel : ObservableObject
 
     public void RevertChanges() => LoadFromSettings();
 
+    /// <summary>
+    /// Откатывает несохранённые изменения и сообщает навигации,
+    /// что переход можно выполнить.
+    /// </summary>
+    private bool RevertChangesAndLeave()
+    {
+        RevertChanges();
+        return true;
+    }
+
     public void LoadFromSettings()
     {
         _suppress = true;
@@ -267,6 +277,14 @@ public sealed partial class AnalysisSettingsViewModel : ObservableObject
     /// Можно ли уйти с вкладки: без правил — нельзя; при несохранённых изменениях —
     /// запрос «Не сохранять / Сохранить» (Esc — остаться).
     /// </summary>
+    /// <summary>
+    /// Проверяет возможность ухода с вкладки «Настройки анализа».
+    ///
+    /// При работающем анализе несохранённые изменения нельзя сохранить.
+    /// После предупреждения они откатываются, а переход разрешается.
+    /// Таким образом пользователь не остаётся на вкладке с изменёнными
+    /// настройками, которые невозможно применить к текущему анализу.
+    /// </summary>
     public bool CanLeave()
     {
         if (SelectedRulesCount == 0)
@@ -274,13 +292,30 @@ public sealed partial class AnalysisSettingsViewModel : ObservableObject
             _services.Dialogs.Warning(NeedOneRuleText, Title);
             return false;
         }
-        if (!IsDirty) return true;
 
-        switch (_services.Dialogs.AskSaveChanges())
+        if (!IsDirty)
+            return true;
+
+        if (_state.IsBusy)
         {
-            case SaveChoice.Cancel: return false;
-            case SaveChoice.Save: return SaveChanges();
-            default: RevertChanges(); return true;
+            // Текущий анализ продолжает работать на уже сохранённой
+            // конфигурации. Изменения пользователя были только локальными
+            // и не должны попасть в настройки после завершения анализа.
+            _services.Dialogs.Warning(LockedText, Title);
+
+            // После единственной кнопки OK возвращаем экран к последним
+            // сохранённым настройкам и разрешаем переход на выбранную вкладку.
+            RevertChanges();
+
+            return true;
         }
+
+        return _services.Dialogs.AskSaveChanges() switch
+        {
+            SaveChoice.Cancel => false,
+            SaveChoice.Save => SaveChanges(),
+            SaveChoice.Discard => RevertChangesAndLeave(),
+            _ => false
+        };
     }
 }

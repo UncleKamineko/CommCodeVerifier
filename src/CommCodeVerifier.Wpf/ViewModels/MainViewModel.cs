@@ -105,6 +105,8 @@ public sealed partial class MainViewModel : ObservableObject
 
         BuildNavigation();
 
+        ValidateNavigation();
+
         // Стартовое состояние:
         // раздел «Коммерческий код»,
         // вкладка «Групповая проверка».
@@ -166,18 +168,20 @@ public sealed partial class MainViewModel : ObservableObject
             "Коммерческий код",
             new[]
             {
-                singleCode,
-                batchProcessing,
-                analysisSettings
-            });
+            singleCode,
+            batchProcessing,
+            analysisSettings
+            },
+            "SectionCommercialCodeText");
 
         var internetShop = new NavigationSection(
             SectionId.InternetShop,
             "Интернет магазин",
             new[]
             {
-                imCheck
-            });
+            imCheck
+            },
+            "SectionInternetShopText");
 
         Sections.Clear();
         Sections.Add(commercialCode);
@@ -309,5 +313,127 @@ public sealed partial class MainViewModel : ObservableObject
             SaveChoice.Discard => true,
             _ => false
         };
+    }
+    /// <summary>
+    /// Проверяет целостность декларации разделов и вкладок.
+    /// Ошибка здесь означает ошибку конфигурации навигации,
+    /// а не пользовательского ввода.
+    /// </summary>
+    private void ValidateNavigation()
+    {
+        if (Sections.Count == 0)
+        {
+            throw new InvalidOperationException(
+                "Навигация не содержит ни одного раздела.");
+        }
+
+        var duplicatedSections = Sections
+            .GroupBy(section => section.Id)
+            .Where(group => group.Count() > 1)
+            .Select(group => group.Key)
+            .ToList();
+
+        if (duplicatedSections.Count > 0)
+        {
+            throw new InvalidOperationException(
+                "В навигации повторяются разделы: " +
+                string.Join(", ", duplicatedSections));
+        }
+
+        var allTabs = Sections
+            .SelectMany(section => section.Tabs)
+            .ToList();
+
+        var duplicatedTabs = allTabs
+            .GroupBy(tab => tab.Id)
+            .Where(group => group.Count() > 1)
+            .Select(group => group.Key)
+            .ToList();
+
+        if (duplicatedTabs.Count > 0)
+        {
+            throw new InvalidOperationException(
+                "В навигации повторяются вкладки: " +
+                string.Join(", ", duplicatedTabs));
+        }
+
+        var tabsWithInvalidSection = allTabs
+            .Where(tab => !Sections.Any(section =>
+                section.Id == tab.Section &&
+                section.Tabs.Contains(tab)))
+            .ToList();
+
+        if (tabsWithInvalidSection.Count > 0)
+        {
+            throw new InvalidOperationException(
+                "Обнаружены вкладки с некорректной принадлежностью к разделу: " +
+                string.Join(", ", tabsWithInvalidSection.Select(tab => tab.Id)));
+        }
+
+        var emptySections = Sections
+            .Where(section => section.Tabs.Count == 0)
+            .Select(section => section.Id)
+            .ToList();
+
+        if (emptySections.Count > 0)
+        {
+            throw new InvalidOperationException(
+                "Обнаружены пустые разделы: " +
+                string.Join(", ", emptySections));
+        }
+
+        var missingTabs = Enum
+            .GetValues<TabId>()
+            .Except(allTabs.Select(tab => tab.Id))
+            .ToList();
+
+        if (missingTabs.Count > 0)
+        {
+            throw new InvalidOperationException(
+                "В навигации не зарегистрированы вкладки: " +
+                string.Join(", ", missingTabs));
+        }
+
+        var missingSectionIds = Enum
+            .GetValues<SectionId>()
+            .Except(Sections.Select(section => section.Id))
+            .ToList();
+
+        if (missingSectionIds.Count > 0)
+        {
+            throw new InvalidOperationException(
+                "В навигации не зарегистрированы разделы: " +
+                string.Join(", ", missingSectionIds));
+        }
+
+        foreach (var section in Sections)
+        {
+            if (string.IsNullOrWhiteSpace(section.Title))
+            {
+                throw new InvalidOperationException(
+                    $"У раздела {section.Id} отсутствует заголовок.");
+            }
+
+            if (string.IsNullOrWhiteSpace(section.TextStyleKey))
+            {
+                throw new InvalidOperationException(
+                    $"У раздела {section.Id} отсутствует ключ стиля текста.");
+            }
+
+            foreach (var tab in section.Tabs)
+            {
+                if (string.IsNullOrWhiteSpace(tab.Title))
+                {
+                    throw new InvalidOperationException(
+                        $"У вкладки {tab.Id} отсутствует заголовок.");
+                }
+
+                if (tab.ViewModel == null)
+                {
+                    throw new InvalidOperationException(
+                        $"У вкладки {tab.Id} отсутствует ViewModel.");
+                }
+            }
+        }
     }
 }

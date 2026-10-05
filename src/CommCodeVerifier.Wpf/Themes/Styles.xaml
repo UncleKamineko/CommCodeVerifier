@@ -1,5 +1,6 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib"
                     xmlns:controls="clr-namespace:CommCodeVerifier.Wpf.Controls"
                     xmlns:vm="clr-namespace:CommCodeVerifier.Wpf.ViewModels">
 
@@ -52,13 +53,19 @@
     <controls:CountToVisibilityConverter x:Key="CountToVis" />
 
     <!-- ================= радиусы скругления ================= -->
+    <!--    Единая числовая основа радиуса.
+
+    Вкладки и разделы используют одно значение Radius.Value.
+    Форма скругления задаётся конвертером:
+    - TopOnly  — верхние углы вкладки;
+    - LeftOnly — левые углы раздела.
+-->
+    <sys:Double x:Key="Radius.Value">6</sys:Double>
+
     <CornerRadius x:Key="Radius.Button">6</CornerRadius>
-    <CornerRadius x:Key="Radius.Tab">6</CornerRadius>
-    <!-- Скругляются только верхние углы вкладок. -->
-    <CornerRadius x:Key="Radius.Tab.TopOnly">6,6,0,0</CornerRadius>
-    <!-- Разделы: скруглены только верхний левый и нижний левый углы. -->
-    <!-- Радиус совпадает с радиусом вкладок. -->
-    <CornerRadius x:Key="Radius.Section">6,0,0,6</CornerRadius>
+
+    <controls:RadiusToCornerRadiusConverter
+    x:Key="RadiusToCornerRadius" />
 
     <!-- Фиксированные шрифты разделов.
      Изменяются только здесь, отдельно для каждого раздела. -->
@@ -81,6 +88,21 @@
         <Setter Property="FontWeight"
             Value="Normal" />
     </Style>
+
+    <DataTemplate x:Key="CommercialCodeSectionTemplate">
+        <TextBlock Text="{Binding Title}"
+               Style="{StaticResource SectionCommercialCodeText}" />
+    </DataTemplate>
+
+    <DataTemplate x:Key="InternetShopSectionTemplate">
+        <TextBlock Text="{Binding Title}"
+               Style="{StaticResource SectionInternetShopText}" />
+    </DataTemplate>
+
+    <controls:SectionItemTemplateSelector
+    x:Key="SectionItemTemplateSelector"
+    CommercialCodeTemplate="{StaticResource CommercialCodeSectionTemplate}"
+    InternetShopTemplate="{StaticResource InternetShopSectionTemplate}" />
 
     <!-- ================= кнопки ================= -->
     <!-- Свой шаблон: скругление (controls:ButtonAssist.CornerRadius) и фон, который
@@ -203,7 +225,10 @@
 
         <Setter Property="Padding"
             Value="12,4" />
-
+        
+        <Setter Property="controls:RadiusAssist.Value"
+        Value="{DynamicResource Radius.Value}" />
+        
         <!-- Это относится к содержимому выбранной вкладки.
          Оно должно быть выровнено слева и сверху. -->
         <Setter Property="HorizontalContentAlignment"
@@ -219,13 +244,16 @@
             <Setter.Value>
                 <ControlTemplate TargetType="TabItem">
                     <Border x:Name="Bd"
-                        Background="{DynamicResource Brush.Tab.Normal}"
-                        BorderBrush="{DynamicResource Brush.Tab.Border}"
-                        BorderThickness="1"
-                        CornerRadius="{DynamicResource Radius.Tab.TopOnly}"
-                        Padding="{TemplateBinding Padding}"
-                        SnapsToDevicePixels="True">
-
+                    Background="{DynamicResource Brush.Tab.Normal}"
+                    BorderBrush="{DynamicResource Brush.Tab.Border}"
+                    BorderThickness="1"
+                    CornerRadius="{Binding RelativeSource={RelativeSource TemplatedParent},
+                               Path=(controls:RadiusAssist.Value),
+                               Converter={StaticResource RadiusToCornerRadius},
+                               ConverterParameter=TopOnly}"
+                    Padding="{TemplateBinding Padding}"
+                    SnapsToDevicePixels="True">
+                        
                         <!-- Центрируется только заголовок вкладки. -->
                         <ContentPresenter ContentSource="Header"
                                       HorizontalAlignment="Center"
@@ -370,13 +398,16 @@
     <Style x:Key="SectionListBoxItem"
        TargetType="ListBoxItem">
         <Setter Property="HorizontalContentAlignment"
-            Value="Stretch" />
+        Value="Stretch" />
 
         <Setter Property="Padding"
-            Value="0" />
+        Value="0" />
+
+        <Setter Property="controls:RadiusAssist.Value"
+        Value="{DynamicResource Radius.Value}" />
 
         <Setter Property="Margin"
-            Value="0" />
+        Value="0" />
 
         <Setter Property="BorderThickness"
             Value="0" />
@@ -388,7 +419,10 @@
                         Background="{DynamicResource Brush.Tab.Normal}"
                         BorderBrush="{DynamicResource Brush.Tab.Border}"
                         BorderThickness="1"
-                        CornerRadius="{DynamicResource Radius.Section}"
+                        CornerRadius="{Binding RelativeSource={RelativeSource TemplatedParent},
+                        Path=(controls:RadiusAssist.Value),
+                        Converter={StaticResource RadiusToCornerRadius},
+                        ConverterParameter=LeftOnly}"
                         Padding="12,8">
 
                         <ContentPresenter
@@ -430,9 +464,4 @@
         </Setter>
     </Style>
 
-    <DataTemplate x:Key="SectionItemTemplate"
-              DataType="{x:Type vm:NavigationSection}">
-        <TextBlock Text="{Binding Title}"
-               Style="{StaticResource SectionCommercialCodeText}" />
-    </DataTemplate>
 </ResourceDictionary>

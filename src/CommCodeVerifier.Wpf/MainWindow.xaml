@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:CommCodeVerifier.Wpf.ViewModels"
         xmlns:views="clr-namespace:CommCodeVerifier.Wpf.Views"
+        xmlns:controls="clr-namespace:CommCodeVerifier.Wpf.Controls"
         Title="CommCodeVerifier v1.0.0"
         Width="1000"
         Height="740"
@@ -45,6 +46,11 @@
 
         <DataTemplate DataType="{x:Type vm:ImCheckViewModel}">
             <views:ImCheckView />
+        </DataTemplate>
+
+        <DataTemplate x:Key="SectionItemTemplate">
+            <ContentControl Content="{Binding}"
+                    ContentTemplateSelector="{StaticResource SectionItemTemplateSelector}" />
         </DataTemplate>
     </Window.Resources>
 

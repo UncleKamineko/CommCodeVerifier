@@ -66,13 +66,20 @@ public sealed class NavigationSection
     /// </summary>
     public IReadOnlyList<NavigationTab> Tabs { get; }
 
+    /// <summary>
+    /// Ключ стиля текста раздела в Styles.xaml.
+    /// </summary>
+    public string TextStyleKey { get; }
+
     public NavigationSection(
         SectionId id,
         string title,
-        IReadOnlyList<NavigationTab> tabs)
+        IReadOnlyList<NavigationTab> tabs,
+        string textStyleKey)
     {
         Id = id;
         Title = title;
         Tabs = tabs;
+        TextStyleKey = textStyleKey;
     }
 }
