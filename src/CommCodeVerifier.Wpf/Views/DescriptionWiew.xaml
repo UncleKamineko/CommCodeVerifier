@@ -1,0 +1,10 @@
+<UserControl x:Class="CommCodeVerifier.Wpf.Views.HierarchyView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid Margin="14">
+        <TextBlock Style="{StaticResource HeaderText}"
+                   Text="Наименование"
+                   Margin="0,4,0,10" />
+    </Grid>
+</UserControl>

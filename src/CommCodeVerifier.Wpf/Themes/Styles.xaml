@@ -89,6 +89,26 @@
             Value="Normal" />
     </Style>
 
+    <Style x:Key="SectionHierarchyText"
+        TargetType="TextBlock">
+        <Setter Property="FontFamily"
+        Value="Segoe UI" />
+        <Setter Property="FontSize"
+        Value="16" />
+        <Setter Property="FontWeight"
+        Value="Normal" />
+    </Style>
+
+    <Style x:Key="SectionDescriptionText"
+       TargetType="TextBlock">
+        <Setter Property="FontFamily"
+            Value="Segoe UI" />
+        <Setter Property="FontSize"
+            Value="16" />
+        <Setter Property="FontWeight"
+            Value="Normal" />
+    </Style>
+
     <DataTemplate x:Key="CommercialCodeSectionTemplate">
         <TextBlock Text="{Binding Title}"
                Style="{StaticResource SectionCommercialCodeText}" />
@@ -99,10 +119,24 @@
                Style="{StaticResource SectionInternetShopText}" />
     </DataTemplate>
 
+    <DataTemplate x:Key="HierarchySectionTemplate">
+        <TextBlock Text="{Binding Title}"
+               Style="{StaticResource SectionHierarchyText}" />
+    </DataTemplate>
+
+    <DataTemplate x:Key="DescriptionSectionTe   mplate">
+        <TextBlock Text="{Binding Title}"
+               Style="{StaticResource SectionDescriptionText}" />
+    </DataTemplate>
+
+
+    <!-- ================= шаблон выбора раздела ================= -->
     <controls:SectionItemTemplateSelector
     x:Key="SectionItemTemplateSelector"
     CommercialCodeTemplate="{StaticResource CommercialCodeSectionTemplate}"
-    InternetShopTemplate="{StaticResource InternetShopSectionTemplate}" />
+    InternetShopTemplate="{StaticResource InternetShopSectionTemplate}"
+    HierarchyTemplate="{StaticResource HierarchySectionTemplate}"
+    DescriptionTemplate="{StaticResource DescriptionSectionTemplate}" />
 
     <!-- ================= кнопки ================= -->
     <!-- Свой шаблон: скругление (controls:ButtonAssist.CornerRadius) и фон, который
@@ -172,7 +206,7 @@
     </Style>
 
     <!-- ================= текст ================= -->
-    <!-- Заголовки: на 1 больше текста вкладок, полужирные (как в WinForms 0.9.0). -->
+    <!-- Заголовки: на 1 больше текста вкладок, полужирные -->
     <Style x:Key="HeaderText" TargetType="TextBlock">
         <Setter Property="FontSize" Value="{DynamicResource Font.Header}" />
         <Setter Property="FontWeight" Value="Bold" />
@@ -378,7 +412,7 @@
         </Setter>
     </Style>
     
-    <!-- ================= Разделы приложения ================= -->
+    <!-- ================= Разделы приложения (оформление) ================= -->
 
     <Style x:Key="SectionListBox"
        TargetType="ListBox">
