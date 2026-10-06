@@ -40,8 +40,11 @@ public sealed partial class MainViewModel : ObservableObject
     public BatchViewModel Batch { get; }
 
     public AnalysisSettingsViewModel AnalysisSettings { get; }
+    public DuplicatesViewModel Duplicates { get; }
 
     public ImCheckViewModel ImCheck { get; }
+    public HierarchyViewModel Hierarchy { get; }
+    public DescriptionViewModel Description { get; }
 
     public ObservableCollection<NavigationSection> Sections { get; } = new();
 
@@ -96,12 +99,15 @@ public sealed partial class MainViewModel : ObservableObject
     {
         Services = services;
 
-        // ViewModel создаются один раз.
+        // ViewModel создаются один раз. Перечисление ВСЕХ вкладок и их свойств.
         // Переключение разделов их не уничтожает и не создаёт заново.
         SingleCheck = new SingleCheckViewModel(services);
         Batch = new BatchViewModel(services, Processing);
+        Duplicates = new DuplicatesViewModel();
         AnalysisSettings = new AnalysisSettingsViewModel(services, Processing);
         ImCheck = new ImCheckViewModel(services, Processing, ReloadConfiguration);
+        Hierarchy = new HierarchyViewModel();
+        Description = new DescriptionViewModel();
 
         BuildNavigation();
 
@@ -109,12 +115,19 @@ public sealed partial class MainViewModel : ObservableObject
 
         // Стартовое состояние:
         // раздел «Коммерческий код»,
-        // вкладка «Групповая проверка».
+        // вкладка «Групповая проверка»
+        // Регистрируем последнюю выбранную вкладку раздела.
         _lastTabs[SectionId.CommercialCode] =
             FindTab(TabId.BatchProcessing)!;
 
         _lastTabs[SectionId.InternetShop] =
             FindTab(TabId.ImCheck)!;
+        
+        _lastTabs[SectionId.Hierarchy] =
+            FindTab(TabId.Hierarchy)!;
+
+        _lastTabs[SectionId.Description] =
+            FindTab(TabId.Description)!;
 
         _navigationUpdateInProgress = true;
         try
@@ -129,7 +142,7 @@ public sealed partial class MainViewModel : ObservableObject
 
     /// <summary>
     /// Все разделы и вкладки приложения описываются в одном месте.
-    ///
+    /// 
     /// Для добавления нового раздела в дальнейшем потребуется:
     /// 1. добавить SectionId;
     /// 2. создать его вкладки;
@@ -151,6 +164,12 @@ public sealed partial class MainViewModel : ObservableObject
             "Групповая проверка",
             Batch);
 
+        var duplicates = new NavigationTab(
+            TabId.Duplicates,
+            SectionId.CommercialCode,
+            "Дубли",
+            Duplicates);
+
         var analysisSettings = new NavigationTab(
             TabId.AnalysisSettings,
             SectionId.CommercialCode,
@@ -163,6 +182,18 @@ public sealed partial class MainViewModel : ObservableObject
             "Проверка для ИМ",
             ImCheck);
 
+        var hierarchyTab = new NavigationTab(
+            TabId.Hierarchy,
+            SectionId.Hierarchy,
+            "Иерархия",
+            Hierarchy);
+
+        var description = new NavigationTab(
+            TabId.Description,
+            SectionId.Description,
+            "Наименование",
+            Description);
+
         var commercialCode = new NavigationSection(
             SectionId.CommercialCode,
             "Коммерческий код",
@@ -170,6 +201,7 @@ public sealed partial class MainViewModel : ObservableObject
             {
             singleCode,
             batchProcessing,
+            duplicates,
             analysisSettings
             },
             "SectionCommercialCodeText");
@@ -183,9 +215,33 @@ public sealed partial class MainViewModel : ObservableObject
             },
             "SectionInternetShopText");
 
+        var hierarchy = new NavigationSection(
+            SectionId.Hierarchy,
+            "Иерархия",
+            new[]
+           {
+            hierarchyTab
+           },
+           "SectionHierarchyText");
+
+        var descriptionSection = new NavigationSection(
+            SectionId.Description,
+            "Наименование",
+            new[]
+           {
+            description
+           },
+           "SectionDescriptionText");
+
+        /// <summary>
+        /// Указываем порядок разделов в навигации. Порядок вкладок внутри раздела задаётся при создании NavigationSection.
+        /// </summary>
         Sections.Clear();
         Sections.Add(commercialCode);
         Sections.Add(internetShop);
+        Sections.Add(hierarchy);
+        Sections.Add(description);
+
     }
 
     private NavigationTab? FindTab(TabId id)

@@ -13,6 +13,11 @@ public sealed class SectionItemTemplateSelector : DataTemplateSelector
 
     public DataTemplate? InternetShopTemplate { get; set; }
 
+    public DataTemplate? HierarchyTemplate { get; set; }
+
+    public DataTemplate? DescriptionTemplate { get; set; }
+
+
     public override DataTemplate? SelectTemplate(
         object item,
         DependencyObject container)
@@ -24,6 +29,8 @@ public sealed class SectionItemTemplateSelector : DataTemplateSelector
         {
             SectionId.CommercialCode => CommercialCodeTemplate,
             SectionId.InternetShop => InternetShopTemplate,
+            SectionId.Hierarchy => HierarchyTemplate,
+            SectionId.Description => DescriptionTemplate,
             _ => base.SelectTemplate(item, container)
         };
     }

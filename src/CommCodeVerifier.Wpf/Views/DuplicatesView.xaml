@@ -1,0 +1,29 @@
+<UserControl x:Class="CommCodeVerifier.Wpf.Views.DuplicatesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Grid Margin="14">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0"
+                   Style="{StaticResource HeaderText}"
+                   Text="Дубли"
+                   Margin="0,4,0,10" />
+
+        <!-- Кнопка является заготовкой и пока не имеет команды. -->
+        <Button Grid.Row="1"
+                Content="Загрузить файл"
+                HorizontalAlignment="Left"
+                Margin="0,0,0,12" />
+
+        <TextBlock Grid.Row="2"
+                   Text="Вкладка предназначена для анализа перечня номенклатуры на дубликаты путём анализа наименования по правилам обработки коммерческого кода и последующего сравнения получившихся значений"
+                   TextWrapping="Wrap"
+                   VerticalAlignment="Top"
+                   MaxWidth="900" />
+    </Grid>
+</UserControl>

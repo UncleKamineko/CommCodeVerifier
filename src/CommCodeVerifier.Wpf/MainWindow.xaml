@@ -29,7 +29,7 @@
     <!--
         DataTemplate связывает NavigationTab.ViewModel с конкретным View.
         ViewModel остаются жить в MainViewModel, даже если вкладка временно
-        исключена из VisibleTabs.
+        исключена из VisibleTabs. Сюда добавляем новые вкладки!.
     -->
     <Window.Resources>
         <DataTemplate DataType="{x:Type vm:SingleCheckViewModel}">
@@ -40,6 +40,10 @@
             <views:BatchView />
         </DataTemplate>
 
+        <DataTemplate DataType="{x:Type vm:DuplicatesViewModel}">
+            <views:DuplicatesView />
+        </DataTemplate>
+
         <DataTemplate DataType="{x:Type vm:AnalysisSettingsViewModel}">
             <views:AnalysisSettingsView />
         </DataTemplate>
@@ -48,6 +52,14 @@
             <views:ImCheckView />
         </DataTemplate>
 
+        <DataTemplate DataType="{x:Type vm:HierarchyViewModel}">
+            <views:HierarchyView />
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:DescriptionViewModel}">
+            <views:DescriptionView />
+        </DataTemplate>
+        
         <DataTemplate x:Key="SectionItemTemplate">
             <ContentControl Content="{Binding}"
                     ContentTemplateSelector="{StaticResource SectionItemTemplateSelector}" />

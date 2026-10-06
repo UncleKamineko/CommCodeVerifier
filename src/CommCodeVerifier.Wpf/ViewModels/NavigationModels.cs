@@ -8,18 +8,23 @@ namespace CommCodeVerifier.Wpf.ViewModels;
 public enum SectionId
 {
     CommercialCode,
-    InternetShop
+    InternetShop,
+    Hierarchy,
+    Description
 }
 
 /// <summary>
-/// Идентификатор вкладки.
+/// Идентификатор вкладки (для всех разделов).
 /// </summary>
 public enum TabId
 {
     SingleCode,
     BatchProcessing,
+    Duplicates,
     AnalysisSettings,
-    ImCheck
+    ImCheck,
+    Hierarchy,
+    Description
 }
 
 /// <summary>
