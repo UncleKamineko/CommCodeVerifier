@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -693,14 +693,41 @@ public static class CodeProcessor
         if (first.len == 0) return "";
         return value.Substring(first.start, first.len).Trim(EdgeTrim);
     }
+    /// <summary>
+    /// Проверяет токен как обычное значащее слово и как исходный токен целиком.
+    ///
+    /// Проверка исходного токена целиком необходима для шаблонов вида:
+    /// «Гильза(*)», «Гильза(***)» и т. п., поскольку круглые скобки
+    /// являются частью шаблона и не должны удаляться до проверки.
+    /// </summary>
+    private static bool IsSignificantToken(
+        string token,
+        ConfigRepository cfg)
+    {
+        if (string.IsNullOrEmpty(token))
+            return false;
+
+        if (cfg.IsSignificantWord(token))
+            return true;
+
+        string trimmedToken = token.Trim(EdgeTrim);
+
+        return trimmedToken.Length > 0 &&
+               !string.Equals(
+                   token,
+                   trimmedToken,
+                   StringComparison.Ordinal) &&
+               cfg.IsSignificantWord(trimmedToken);
+    }
 
     private static bool StartsWithSignificantWord(string value, ConfigRepository cfg)
     {
         if (string.IsNullOrEmpty(value)) return false;
-        var first = TokenSpans(value).FirstOrDefault();
+        var first = TokenSpansWithParenthesizedSpaces(value).FirstOrDefault();
         if (first.len == 0) return false;
         string firstToken = value.Substring(first.start, first.len).Trim(EdgeTrim);
-        return firstToken.Length > 0 && cfg.IsSignificantWord(firstToken);
+        string originalToken = value.Substring(first.start, first.len);
+        return firstToken.Length > 0 && IsSignificantToken(originalToken, cfg);
     }
 
     private static bool IsTechnicalToken(string token)
@@ -861,7 +888,7 @@ public static class CodeProcessor
         bool changed = false;
         leadingWordRemoved = false;
         string v = t.Value;
-        var spans = TokenSpans(v);
+        var spans = TokenSpansWithParenthesizedSpaces(v);
 
         // Граница уже удалённого «хвоста» в координатах снимка v.
         // Индексы < removedStart в v и в t совпадают, поэтому сверяемся с ней,
@@ -874,7 +901,12 @@ public static class CodeProcessor
             var (start, len) = spans[k];
             string tok = v.Substring(start, len);
             string core = tok.Trim(EdgeTrim);
-            if (core.Length == 0 || !cfg.IsSignificantWord(core)) continue;
+            bool significant = core.Length > 0 && IsSignificantToken(tok, cfg);
+
+            if (core.Length == 0 || !IsSignificantToken(tok, cfg))
+            {
+                continue;
+            }
 
             int s = start, l = len;
 
@@ -1165,7 +1197,73 @@ public static class CodeProcessor
         }
         return list;
     }
+    /// <summary>
+    /// Разбивает строку на токены, сохраняя пробелы внутри круглых скобок
+    /// частью одного токена.
+    ///
+    /// Например:
+    ///
+    ///     12578 Гильза(1 555)
+    ///
+    /// разбивается на:
+    ///
+    ///     12578
+    ///     Гильза(1 555)
+    ///
+    /// Это необходимо для обработки шаблонов значащих слов вида:
+    ///
+    ///     Гильза(*****)
+    /// </summary>
+    private static List<(int start, int len)>
+    TokenSpansWithParenthesizedSpaces(string s)
+    {
+        var result = new List<(int start, int len)>();
 
+        int i = 0;
+
+        while (i < s.Length)
+        {
+            while (i < s.Length && char.IsWhiteSpace(s[i]))
+                i++;
+
+            if (i >= s.Length)
+                break;
+
+            int start = i;
+            int parenthesisDepth = 0;
+
+            while (i < s.Length)
+            {
+                char current = s[i];
+
+                if (current == '(')
+                {
+                    parenthesisDepth++;
+                    i++;
+                    continue;
+                }
+
+                if (current == ')' && parenthesisDepth > 0)
+                {
+                    parenthesisDepth--;
+                    i++;
+                    continue;
+                }
+
+                if (char.IsWhiteSpace(current) &&
+                    parenthesisDepth == 0)
+                {
+                    break;
+                }
+
+                i++;
+            }
+
+            result.Add((start, i - start));
+        }
+
+        return result;
+    }
     /// <summary>Разбиение строки на непрерывные отрезки «подсвечено / не подсвечено».</summary>
     public static IEnumerable<(int start, int len, bool marked)> Segments(string text, HashSet<int> marks)
     {
