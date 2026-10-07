@@ -72,11 +72,22 @@ public sealed class ConfigRepository
     public ImRuleSet ImArticleRules { get; private set; } = new(ImRuleTarget.Article);
 
     private HashSet<string> _wordForms = new(StringComparer.OrdinalIgnoreCase);
+    private List<Regex> _wordRegexes = new();
+
     /// Слова безусловного удаления кода (правило 12).
     private HashSet<string> _forceDeleteWords = new(StringComparer.OrdinalIgnoreCase);
     private HashSet<string> _genitiveExceptions = new(StringComparer.OrdinalIgnoreCase);
 
-    public bool IsSignificantWord(string token) => _wordForms.Contains(token);
+    public bool IsSignificantWord(string token)
+    {
+        if (string.IsNullOrEmpty(token))
+            return false;
+
+        if (_wordForms.Contains(token))
+            return true;
+
+        return _wordRegexes.Any(regex => regex.IsMatch(token));
+    }
 
     /// Слово входит в список безусловного удаления кода.
     public bool IsForceDeleteWord(string token) =>
@@ -142,10 +153,80 @@ public sealed class ConfigRepository
             _words.Add(v);
         }
         var forms = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var w in _words) foreach (var f in Morphology.Expand(w, mode)) forms.Add(f);
-        _wordForms = forms;
-    }
+        var regexes = new List<Regex>();
 
+        foreach (var word in _words)
+        {
+            if (TryCreateSignificantWordPatternRegex(word, out var patternRegex))
+            {
+                regexes.Add(patternRegex);
+                continue;
+            }
+
+            foreach (var form in Morphology.Expand(word, mode))
+                forms.Add(form);
+        }
+
+        _wordForms = forms;
+        _wordRegexes = regexes;
+    }
+    /// <summary>
+    /// Пытается преобразовать запись значащего слова вида:
+    ///
+    ///     Шток(*)
+    ///     Шток(**)
+    ///     Шток(***)
+    ///
+    /// в регулярное выражение с точным количеством любых символов
+    /// внутри круглых скобок.
+    ///
+    /// Запись считается шаблоном только в том случае, если:
+    /// - перед открывающей скобкой есть хотя бы один символ;
+    /// - запись заканчивается закрывающей скобкой;
+    /// - внутри скобок находится одна или более звёздочек;
+    /// - внутри скобок нет других символов.
+    /// </summary>
+    private static bool TryCreateSignificantWordPatternRegex(
+        string value,
+        out Regex regex)
+    {
+        regex = null!;
+
+        int openingBracket = value.LastIndexOf('(');
+
+        if (openingBracket <= 0)
+            return false;
+
+        if (!value.EndsWith(')'))
+            return false;
+
+        string prefix = value[..openingBracket];
+        string wildcardPart = value[(openingBracket + 1)..^1];
+
+        if (wildcardPart.Length == 0)
+            return false;
+
+        if (wildcardPart.Any(character => character != '*'))
+            return false;
+
+        string anyCharacters =
+            $@"[\s\S]{{{wildcardPart.Length}}}";
+
+        string pattern =
+            "^" +
+            Regex.Escape(prefix) +
+            @"\(" +
+            anyCharacters +
+            @"\)$";
+
+        regex = new Regex(
+            pattern,
+            RegexOptions.IgnoreCase |
+            RegexOptions.CultureInvariant |
+            RegexOptions.Compiled);
+
+        return true;
+    }
     private void LoadEndings()
     {
         IEnumerable<string> raw;
