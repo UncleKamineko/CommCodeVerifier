@@ -47,7 +47,7 @@ public static class BatchProcessor
     public const string FileNoChange = "Комм. код не был изменён.xlsx";
     public const string FileDuplicates1C = "Дубликаты в кодах для переноса в 1С.xlsx";
     public const string SrcHeaderArticle = "Номенклатура.Артикул";
-    public const string SrcHeaderCode = "Номенклатура.Коммерческий код (Общие)";
+    public const string SrcHeaderCode = "Коммерческий код";
     public const string SrcHeaderGroup = "Номенклатура.Группа выгрузки ИМ (Общие)";
     public const string OutHeaderGroup = "Группа выгрузки ИМ";
     /// Текст предупреждения о дубликатах — для вкладки и для файла сводки.
@@ -175,9 +175,11 @@ public static class BatchProcessor
         report.Duplicates1C = duplicates1C.Count;
         report.DuplicatesManual = dupManual.Count;
 
-        WriteSimple(Path.Combine(report.OutputFolder, File1C), clean1C, useResult: true);
+        if (clean1C.Count > 0)
+            WriteSimple(Path.Combine(report.OutputFolder, File1C), clean1C, useResult: true);
         WriteSimple(Path.Combine(report.OutputFolder, FileNoChange), unchanged, useResult: false);
-        WriteManual(Path.Combine(report.OutputFolder, FileManual), manual, report, dupManual);
+        if (manual.Count > 0)
+            WriteManual(Path.Combine(report.OutputFolder, FileManual), manual, report, dupManual);
 
         // Файл дубликатов — только если найден хотя бы один дубликат.
         if (duplicates1C.Count > 0)

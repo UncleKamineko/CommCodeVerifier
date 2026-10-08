@@ -11,9 +11,8 @@ public enum ChosenFolderState { Chosen, Latest, None }
 /// Вкладка «Проверка для ИМ».
 public sealed partial class ImCheckViewModel : ObservableObject
 {
-    public const string NoteText =
-        "Если планируете проверять последние результаты, просто нажмите «Запустить проверку».";
-
+    public const string NoteText = "Если планируете проверять последние результаты, просто нажмите «Запустить проверку».";
+    public const string NoInvalidCodesText = "Некорректных коммерческих кодов не обнаружено";
     private const string Title = "Проверка для ИМ";
     private const string XlsxFilter = "Файлы Excel (*.xlsx)|*.xlsx";
 
@@ -91,6 +90,12 @@ public sealed partial class ImCheckViewModel : ObservableObject
     private string _summary = "";
 
     [ObservableProperty] private bool _summaryHasWrong;
+
+    [ObservableProperty]
+    private bool _noInvalidCodesSingle;
+
+    [ObservableProperty]
+    private bool _noInvalidCodesBatch;
 
     /// Папки результатов последнего прогона — отдельно для каждого варианта (как в WinForms).
     [ObservableProperty]
@@ -224,6 +229,10 @@ public sealed partial class ImCheckViewModel : ObservableObject
         Status = "";
         Summary = "";
         SummaryHasWrong = false;
+        if (singleFile)
+            NoInvalidCodesSingle = false;
+        else
+            NoInvalidCodesBatch = false;
         _cts = new CancellationTokenSource();
         var token = _cts.Token;
         var progress = new Progress<int>(v => Progress = Math.Clamp(v, 0, 100));
@@ -234,6 +243,10 @@ public sealed partial class ImCheckViewModel : ObservableObject
 
             if (singleFile) LastSingleFolder = report.OutputFolder;
             else LastBatchFolder = report.OutputFolder;
+            if (singleFile) 
+                NoInvalidCodesSingle = report.Wrong == 0;
+            else
+                NoInvalidCodesBatch = report.Wrong == 0;
 
             Progress = 100;
             Status = singleFile

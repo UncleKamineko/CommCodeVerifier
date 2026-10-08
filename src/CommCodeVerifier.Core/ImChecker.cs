@@ -53,7 +53,7 @@ public static class ImChecker
 
     // ================= ВАРИАНТ 2: отдельный файл =================
     public const string HeaderArticle = "Номенклатура.Артикул";
-    public const string HeaderCode = "Номенклатура.Коммерческий код (Общие)";
+    public const string HeaderCode = "Коммерческий код";
 
     public static bool ValidateSingleTemplate(string path, out string error)
     {
@@ -267,7 +267,8 @@ public static class ImChecker
         report.Wrong = wrong.Count;
 
         Write(Path.Combine(report.OutputFolder, FileCorrect), correct, highlight: false);
-        Write(Path.Combine(report.OutputFolder, FileWrong), wrong, highlight: true);
+        if (wrong.Count > 0)
+            Write(Path.Combine(report.OutputFolder, FileWrong), wrong, highlight: true);
     }
 
     private static void Write(string path, List<ImChecked> data, bool highlight)

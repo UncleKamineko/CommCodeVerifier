@@ -27,12 +27,20 @@
             <Button Content="Открыть папку с результатами" HorizontalAlignment="Left" Margin="0,4"
                     ToolTip="{Binding SingleResultsTooltip}"
                     Command="{Binding OpenSingleResultsCommand}"
-                    Visibility="{Binding HasSingleResults, Converter={StaticResource BoolToVis}}" Background="{DynamicResource Brush.Button.Accent}" FontWeight="Bold" />
+                    Visibility="{Binding HasSingleResults, Converter={StaticResource BoolToVis}}"
+                    Background="{DynamicResource Brush.Button.Accent}" FontWeight="Bold" />
 
-            <Separator Margin="0,8" Background="Black" BorderBrush="Black" BorderThickness="3" />
+            <TextBlock Text="{x:Static vm:ImCheckViewModel.NoInvalidCodesText}"
+                       Visibility="{Binding NoInvalidCodesSingle, Converter={StaticResource BoolToVis}}"
+                       Foreground= "#FF029802"
+                       FontWeight="Bold"
+                       Margin="0,0,0,4"
+                       FontSize="18" />
+            
+            <Separator Margin="0,8" Background="Black" BorderBrush="Black" BorderThickness="20" />
 
             <!-- ================= папка групповой обработки ================= -->
-            <WrapPanel Margin="0,4">
+            <WrapPanel Margin="0,15">
                 <TextBlock Style="{StaticResource RowCaption}"
                            Text="Проверка по файлам анализа вкладки групповой обработки" />
                 <Button Content="Папка для проверки" Command="{Binding PickFolderCommand}" />
@@ -54,12 +62,26 @@
                 </TextBlock.Style>
             </TextBlock>
 
-            <Button Content="Запустить проверку" HorizontalAlignment="Left" Margin="0,4"
-                    Command="{Binding RunFolderCommand}" />
+            <Button Content="Запустить проверку"
+                    HorizontalAlignment="Left"
+                    Margin="0,4"
+                    Command="{Binding RunFolderCommand}"
+                    FontWeight="Bold" />
             <Button Content="Открыть папку с результатами"
                         ToolTip="Открыть проверенную папку с результатами групповой обработки"
                         Command="{Binding OpenBatchResultsCommand}"
-                        Visibility="{Binding HasBatchResults, Converter={StaticResource BoolToVis}}" Width="Auto" HorizontalAlignment="Left" Background="{DynamicResource Brush.Button.Accent}" FontWeight="Bold" />
+                        Visibility="{Binding HasBatchResults, Converter={StaticResource BoolToVis}}"
+                        Width="Auto"
+                        HorizontalAlignment="Left"
+                        Background="{DynamicResource Brush.Button.Accent}"
+                        FontWeight="Bold" />
+
+            <TextBlock Text="{x:Static vm:ImCheckViewModel.NoInvalidCodesText}"
+                       Visibility="{Binding NoInvalidCodesBatch, Converter={StaticResource BoolToVis}}"
+                       Foreground="#FF029802"
+                       FontWeight="Bold"
+                       Margin="0,0,0,4"
+                       FontSize="18" />
 
             <TextBlock Style="{StaticResource HintText}" Margin="0,4"
                        Text="{x:Static vm:ImCheckViewModel.NoteText}" Foreground="Black" />

@@ -16,7 +16,7 @@ public sealed partial class BatchViewModel : ObservableObject
 {
     public const string BadStructureText = "Выбранный файл имеет некорректную структуру данных, анализ невозможен";
     public const string SuccessText = "Анализ успешно завершён, файлы с результатами готовы для просмотра";
-
+    public const string NoInvalidCodesText = "Некорректных коммерческих кодов не обнаружено";
     private readonly AppServices _services;
     private readonly ProcessingState _state;
     private CancellationTokenSource? _cts;
@@ -40,6 +40,7 @@ public sealed partial class BatchViewModel : ObservableObject
     private int _progress;
 
     [ObservableProperty] private string _status = "";
+    [ObservableProperty] private bool _noInvalidCodes;
 
     /// Статус — успешное завершение (зелёный); иначе серый.
     [ObservableProperty] private bool _statusSuccess;
@@ -120,6 +121,7 @@ public sealed partial class BatchViewModel : ObservableObject
         Summary.Clear();
         Progress = 0;
         StatusSuccess = false;
+        NoInvalidCodes = false;
         Status = "Проверка структуры файла…";
         IsBusy = true;
         _cts = new CancellationTokenSource();
@@ -150,6 +152,7 @@ public sealed partial class BatchViewModel : ObservableObject
             Status = SuccessText;
             StatusSuccess = true;
             OutputFolder = report.OutputFolder;
+            NoInvalidCodes = report.Count1C == 0 && report.CountManual == 0;
             ShowDuplicateWarning(report);
             BuildSummary(report);
         }
