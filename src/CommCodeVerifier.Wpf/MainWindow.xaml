@@ -4,7 +4,7 @@
         xmlns:vm="clr-namespace:CommCodeVerifier.Wpf.ViewModels"
         xmlns:views="clr-namespace:CommCodeVerifier.Wpf.Views"
         xmlns:controls="clr-namespace:CommCodeVerifier.Wpf.Controls"
-        Title="CommCodeVerifier v1.0.0"
+        Title="CommCodeVerifier v1.1.2"
         Width="1000"
         Height="740"
         MinWidth="800"

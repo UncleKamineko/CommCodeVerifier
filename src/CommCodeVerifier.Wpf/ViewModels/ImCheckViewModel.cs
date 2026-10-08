@@ -12,7 +12,7 @@ public enum ChosenFolderState { Chosen, Latest, None }
 public sealed partial class ImCheckViewModel : ObservableObject
 {
     public const string NoteText = "Если планируете проверять последние результаты, просто нажмите «Запустить проверку».";
-    public const string NoInvalidCodesText = "Некорректных коммерческих кодов не обнаружено";
+    public const string NoInvalidCodesText = "Ошибочных признаков доступности в ИМ не обнаружено";
     private const string Title = "Проверка для ИМ";
     private const string XlsxFilter = "Файлы Excel (*.xlsx)|*.xlsx";
 
