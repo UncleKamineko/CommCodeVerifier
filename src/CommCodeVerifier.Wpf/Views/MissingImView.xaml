@@ -1,0 +1,228 @@
+<UserControl x:Class="CommCodeVerifier.Wpf.Views.MissingImView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:CommCodeVerifier.Wpf.ViewModels">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled">
+
+        <Grid Margin="14">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0"
+                       Style="{StaticResource HeaderText}"
+                       Text="Проверка отсутствия признака ИМ"
+                       Margin="0,4,0,8" />
+
+            <TextBlock Grid.Row="1"
+                       TextWrapping="Wrap"
+                       Margin="0,0,0,8"
+                       Text="Проверка ищет коммерческие коды без признака ИМ, для которых в том же семействе найдены похожие коды с установленным признаком." />
+            <TextBlock Grid.Row="2"
+                       TextWrapping="Wrap"
+                       HorizontalAlignment="Stretch"
+                       Margin="0,0,0,10"
+                       Foreground="{DynamicResource Brush.Hint}"
+                       Text="{x:Static vm:MissingImViewModel.InputTemplateText}" />
+
+            <WrapPanel Grid.Row="3"
+                       Margin="0,0,0,4">
+                <Grid Height="Auto" MinWidth="600">
+
+                    <Button Content="Выбрать файл и запустить проверку"
+                        Command="{Binding SelectAndRunCommand}"
+                        HorizontalAlignment="Left"
+                        HorizontalContentAlignment="Center"
+                        Padding="10,4"
+                        Width="Auto"
+                        Margin="0,0,8,4"
+                        Background="{DynamicResource Brush.Button.Accent}"
+                        FontWeight="Bold" />
+
+                    <Button Content="Отменить проверку"
+                        Command="{Binding CancelCommand}"
+                        HorizontalAlignment="Center"
+                        HorizontalContentAlignment="Center"
+                        Padding="10,4"
+                        Width="Auto"
+                        Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}"
+                        Margin="0,0,0,4" />
+
+                    <Button Content="Открыть папку результатов"
+                        Command="{Binding OpenFolderCommand}"
+                        HorizontalContentAlignment="Center"
+                        Padding="10,4"
+                        Width="Auto"
+                        Visibility="{Binding HasOutput, Converter={StaticResource BoolToVis}}"
+                        HorizontalAlignment="Right" Margin="0,0,0,4" />
+                </Grid>
+            </WrapPanel>
+
+            <TextBlock Grid.Row="4"
+                       Text="{Binding Error}"
+                       Foreground="Red"
+                       TextWrapping="Wrap"
+                       Margin="0,0,0,8"
+                       Visibility="{Binding HasError,
+                                            Converter={StaticResource BoolToVis}}" />
+
+            <Grid Grid.Row="5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="360" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0"
+                            Margin="0,0,14,0">
+
+                    <ProgressBar Height="20"
+                                 Minimum="0"
+                                 Maximum="100"
+                                 Value="{Binding Progress}"
+                                 IsIndeterminate="{Binding IsBusy}" />
+
+                    <TextBlock Text="{Binding Status}"
+                               Margin="0,8,0,4"
+                               TextWrapping="Wrap" />
+
+                    <TextBlock Text="{Binding ScannedCount,
+                                               StringFormat=Обработано записей: {0}}"
+                               Margin="0,2" />
+
+                    <TextBlock Text="{Binding CandidateCount,
+                                               StringFormat=Найдено кандидатов: {0}}"
+                               Margin="0,2" />
+
+                    <TextBlock Text="{x:Static vm:MissingImViewModel.NoCandidatesText}"
+                               Foreground="DarkGreen"
+                               FontWeight="Bold"
+                               TextWrapping="Wrap"
+                               Margin="0,8,0,0"
+                               Visibility="{Binding HasCandidates,
+                                                    Converter={StaticResource BoolToVis},
+                                                    ConverterParameter=Invert}" />
+
+                    <TextBlock Text="{Binding OutputFile}"
+                               TextWrapping="Wrap"
+                               Foreground="{DynamicResource Brush.Path.Custom}"
+                               Margin="0,8,0,0"
+                               Visibility="{Binding HasOutput,
+                                                    Converter={StaticResource BoolToVis}}" />
+                    <TextBlock Text="Файл результатов сформирован:"
+                               FontWeight="Bold"
+                               Margin="0,8,0,0"
+                               Visibility="{Binding HasOutput,
+                               Converter={StaticResource BoolToVis}}" />
+
+                    <TextBlock Text="{Binding OutputFile}"
+           TextWrapping="Wrap"
+           Foreground="{DynamicResource Brush.Path.Custom}"
+           Margin="0,2,0,0"
+           Visibility="{Binding HasOutput,
+                                Converter={StaticResource BoolToVis}}" />
+                </StackPanel>
+
+                <GroupBox Grid.Column="1"
+                          Header="Настройки сходства"
+                          Padding="8">
+
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <StackPanel>
+
+                            <TextBlock Text="Веса характеристик"
+                                       FontWeight="Bold"
+                                       Margin="0,0,0,6" />
+
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="90" />
+                                </Grid.ColumnDefinitions>
+
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <ItemsControl Grid.Row="0"
+                                              Grid.ColumnSpan="2"
+                                              ItemsSource="{Binding Weights}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Margin="0,2">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="90" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <TextBlock Text="{Binding Title}"
+                                                           VerticalAlignment="Center"
+                                                           TextWrapping="Wrap"
+                                                           Margin="0,0,6,0" />
+
+                                                <TextBox Grid.Column="1"
+                                                         Text="{Binding Value,
+                                                                UpdateSourceTrigger=PropertyChanged}"
+                                                         HorizontalContentAlignment="Right" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Grid>
+
+                            <Separator Margin="0,8" />
+
+                            <TextBlock Text="Минимальное сходство кода"
+                                       Margin="0,2" />
+
+                            <TextBox Text="{Binding MinimumCodeSimilarity,
+                                                    UpdateSourceTrigger=PropertyChanged}"
+                                     Margin="0,0,0,4" />
+
+                            <TextBlock Text="Минимальная доля кодов с признаком"
+                                       Margin="0,2" />
+
+                            <TextBox Text="{Binding MinimumImPresenceInFamily,
+                                                    UpdateSourceTrigger=PropertyChanged}"
+                                     Margin="0,0,0,4" />
+
+                            <TextBlock Text="Минимальное количество референс-кодов"
+                                       Margin="0,2" />
+
+                            <TextBox Text="{Binding MinimumPositiveReferences,
+                                                    UpdateSourceTrigger=PropertyChanged}"
+                                     Margin="0,0,0,8" />
+
+                            <WrapPanel>
+                                <Button Content="Сохранить настройки"
+                                        Command="{Binding SaveSettingsCommand}"
+                                        Margin="0,0,6,4" />
+
+                                <Button Content="Восстановить значения по умолчанию"
+                                        Command="{Binding RestoreDefaultsCommand}"
+                                        Margin="0,0,6,4" />
+                            </WrapPanel>
+                        </StackPanel>
+                    </ScrollViewer>
+                </GroupBox>
+            </Grid>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

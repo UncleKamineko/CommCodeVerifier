@@ -24,6 +24,10 @@ public sealed class ProcessingSettings
     public string? ImRulesFilePath { get; set; }
     /// Правила проверки артикула для ИМ.
     public string? ImArticleRulesFilePath { get; set; }
+    /// <summary>
+    /// Настройки поиска коммерческих кодов с возможным отсутствием признака ИМ.
+    /// </summary>
+    public MissingImSettings MissingIm { get; set; } = new();
 
     /// Версия сохранённых настроек — для подключения новых правил при обновлении.
     public int ConfigVersion { get; set; }
@@ -83,6 +87,9 @@ public sealed class ProcessingSettings
     /// Пустой список правил — все правила (как в WinForms); null в строках — пустая строка.
     public void Normalize()
     {
+        MissingIm ??= new MissingImSettings();
+        MissingIm.Normalize();
+
         if (EnabledRules == null || EnabledRules.Count == 0) EnabledRules = RuleCatalog.All.ToList();
         Extra1CChars ??= "";
         CyrillicExceptions ??= "";

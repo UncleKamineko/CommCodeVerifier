@@ -10,6 +10,8 @@
         <!-- Только русские ресурсы .NET: меньше размер сборки с .NET внутри. -->
         <SatelliteResourceLanguages>ru</SatelliteResourceLanguages>
         <ApplicationIcon>Assets\Elegantthemes-Softies-Clipboard.ico</ApplicationIcon>
+        <EnableDefaultApplicationDefinition>true</EnableDefaultApplicationDefinition>
+        <EnableDefaultPageItems>true</EnableDefaultPageItems>
     </PropertyGroup>
 
     <ItemGroup>
@@ -24,19 +26,12 @@
        ExcludeFromSingleFile — файл лежит отдельно, его можно заменить без пересборки. -->
     <ItemGroup>
         <!-- Справка: копируется рядом с exe, не встраивается — можно заменить без пересборки. -->
-        <None Include="Assets\Help.rtf"
-              CopyToOutputDirectory="PreserveNewest"
-              CopyToPublishDirectory="PreserveNewest"
-              ExcludeFromSingleFile="true" />    </ItemGroup>
+        <None Include="Assets\Help.rtf" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />    </ItemGroup>
       
     <!-- Шаблонные файлы конфигурации: при сборке и публикации кладутся рядом с exe
        в «Файлы конфигурации». Не встраиваются в exe (ExcludeFromSingleFile). -->
     <ItemGroup>
-        <None Include="Assets\Файлы конфигурации\**\*"
-              Link="Файлы конфигурации\%(RecursiveDir)%(Filename)%(Extension)"
-              CopyToOutputDirectory="PreserveNewest"
-              CopyToPublishDirectory="PreserveNewest"
-              ExcludeFromSingleFile="true" />
+        <None Include="Assets\Файлы конфигурации\**\*" Link="Файлы конфигурации\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
     </ItemGroup>
     
     <ItemGroup>
@@ -46,5 +41,5 @@
     <ItemGroup>
       <Folder Include="Ресурсы\" />
     </ItemGroup>
-
+    
 </Project>

@@ -1,0 +1,228 @@
+using ClosedXML.Excel;
+
+namespace CommCodeVerifier.Core;
+
+public static class MissingImReportWriter
+{
+    public const string BaseFileName = "Коды для простановки признака ИМ.xlsx";
+    private static string CreateFileName()
+    {
+        string prefix =
+            DateTime.Now.ToString(
+                "dd.MM.yyyy_HH.mm",
+                System.Globalization.CultureInfo.InvariantCulture);
+
+        return
+            $"{prefix}_{BaseFileName}.xlsx";
+    }
+    public static string Write(
+        string outputFolder,
+        IReadOnlyCollection<MissingImCandidate> candidates)
+    {
+        Directory.CreateDirectory(outputFolder);
+        string FileName = CreateFileName();
+        string path = Path.Combine(outputFolder, FileName);
+
+        if (File.Exists(path))
+        {
+            string nameWithoutExtension =
+                Path.GetFileNameWithoutExtension(path);
+
+            string extension =
+                Path.GetExtension(path);
+
+            int suffix = 2;
+
+            string candidatePath;
+
+            do
+            {
+                candidatePath = Path.Combine(
+                    outputFolder,
+                    $"{nameWithoutExtension}_{suffix}{extension}");
+
+                suffix++;
+            }
+            while (File.Exists(candidatePath));
+
+            path = candidatePath;
+        }
+        using var workbook = new XLWorkbook();
+
+        WriteCandidatesSheet(
+            workbook,
+            candidates);
+
+        WriteDetailsSheet(
+            workbook,
+            candidates);
+
+        workbook.SaveAs(path);
+            if (!File.Exists(path))
+            {
+            throw new IOException(
+            "Не удалось сохранить XLSX-файл результатов: " +
+            path);
+            }
+
+        return path;
+    }
+
+    private static void WriteCandidatesSheet(
+        XLWorkbook workbook,
+        IReadOnlyCollection<MissingImCandidate> candidates)
+    {
+        var worksheet = workbook.AddWorksheet("Кандидаты");
+
+        worksheet.Cell(1, 1).Value = "Артикул";
+        worksheet.Cell(1, 2).Value = "Коммерческий код";
+        worksheet.Cell(1, 3).Value = "Группа выгрузки ИМ";
+        worksheet.Cell(1, 4).Value = "Референс-код";
+        worksheet.Cell(1, 5).Value = "Сходство, %";
+        worksheet.Cell(1, 6).Value = "Основание";
+
+        worksheet.Row(1).Style.Font.Bold = true;
+
+        var ordered = candidates
+            .OrderByDescending(item => item.SimilarityPercent)
+            .ThenByDescending(item => item.ImPresencePercent)
+            .ThenByDescending(item => item.PositiveFamilyCount)
+            .ThenBy(item => item.Article)
+            .ThenBy(item => item.CommercialCode)
+            .ToList();
+
+        for (int i = 0; i < ordered.Count; i++)
+        {
+            var item = ordered[i];
+            int row = i + 2;
+
+            worksheet.Cell(row, 1).Value = item.Article;
+            worksheet.Cell(row, 2).Value = item.CommercialCode;
+
+            // Столбец предназначен для ручного заполнения.
+            worksheet.Cell(row, 3).Value = "";
+
+            worksheet.Cell(row, 4).Value = item.ReferenceCode;
+            worksheet.Cell(row, 5).Value = item.SimilarityPercent;
+            worksheet.Cell(row, 6).Value = item.Basis;
+        }
+
+        FormatWorksheet(
+            worksheet,
+            ordered.Count + 1,
+            6);
+
+        worksheet.Column(1).Width = 28;
+        worksheet.Column(2).Width = 34;
+        worksheet.Column(3).Width = 24;
+        worksheet.Column(4).Width = 34;
+        worksheet.Column(5).Width = 16;
+        worksheet.Column(6).Width = 100;
+
+        worksheet.Column(5).Style.NumberFormat.Format =
+            "0.00";
+
+        worksheet.Column(6).Style.Alignment.WrapText = true;
+    }
+
+    private static void WriteDetailsSheet(
+        XLWorkbook workbook,
+        IReadOnlyCollection<MissingImCandidate> candidates)
+    {
+        var worksheet = workbook.AddWorksheet("Расшифровка");
+
+        string[] headers =
+        {
+            "Коммерческий код",
+            "Референс-код",
+            "Тип несоответствия",
+            "Оценка сходства, %",
+            "Общая сигнатура",
+            "Совпавшие сегменты",
+            "Различающиеся сегменты",
+            "Количество кодов с признаком",
+            "Количество кодов без признака",
+            "Доля кодов с признаком, %",
+            "Артикул",
+            "Артикул референса"
+        };
+
+        for (int i = 0; i < headers.Length; i++)
+        {
+            worksheet.Cell(1, i + 1).Value = headers[i];
+        }
+
+        worksheet.Row(1).Style.Font.Bold = true;
+
+        var ordered = candidates
+            .OrderByDescending(item => item.SimilarityPercent)
+            .ThenBy(item => item.CommercialCode)
+            .ToList();
+
+        for (int i = 0; i < ordered.Count; i++)
+        {
+            var item = ordered[i];
+            int row = i + 2;
+
+            worksheet.Cell(row, 1).Value = item.CommercialCode;
+            worksheet.Cell(row, 2).Value = item.ReferenceCode;
+            worksheet.Cell(row, 3).Value =
+                "Возможное отсутствие признака ИМ";
+            worksheet.Cell(row, 4).Value =
+                item.SimilarityPercent;
+            worksheet.Cell(row, 5).Value = item.Signature;
+            worksheet.Cell(row, 6).Value = item.MatchedSegments;
+            worksheet.Cell(row, 7).Value = item.DifferentSegments;
+            worksheet.Cell(row, 8).Value =
+                item.PositiveFamilyCount;
+            worksheet.Cell(row, 9).Value =
+                item.NegativeFamilyCount;
+            worksheet.Cell(row, 10).Value =
+                item.ImPresencePercent;
+            worksheet.Cell(row, 11).Value = item.Article;
+            worksheet.Cell(row, 12).Value =
+                item.ReferenceArticle;
+        }
+
+        FormatWorksheet(
+            worksheet,
+            ordered.Count + 1,
+            headers.Length);
+
+        worksheet.Column(4).Style.NumberFormat.Format =
+            "0.00";
+
+        worksheet.Column(10).Style.NumberFormat.Format =
+            "0.00";
+
+        worksheet.Column(5).Width = 34;
+        worksheet.Column(6).Width = 55;
+        worksheet.Column(7).Width = 55;
+        worksheet.Column(11).Width = 28;
+        worksheet.Column(12).Width = 28;
+
+        worksheet.Range(
+                1,
+                1,
+                Math.Max(2, ordered.Count + 1),
+                headers.Length)
+            .Style.Alignment.WrapText = true;
+    }
+
+    private static void FormatWorksheet(
+        IXLWorksheet worksheet,
+        int lastRow,
+        int lastColumn)
+    {
+        worksheet.SheetView.FreezeRows(1);
+
+        worksheet.Range(
+                1,
+                1,
+                Math.Max(2, lastRow),
+                lastColumn)
+            .SetAutoFilter();
+
+        worksheet.Row(1).Style.Alignment.WrapText = true;
+    }
+}

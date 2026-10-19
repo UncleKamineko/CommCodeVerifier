@@ -19,7 +19,8 @@ public enum TabId
     SingleCode,
     BatchProcessing,
     AnalysisSettings,
-    ImCheck
+    ImCheck,
+    MissingIm
 }
 
 /// <summary>

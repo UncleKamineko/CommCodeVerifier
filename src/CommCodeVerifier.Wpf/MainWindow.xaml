@@ -47,6 +47,10 @@
         <DataTemplate DataType="{x:Type vm:ImCheckViewModel}">
             <views:ImCheckView />
         </DataTemplate>
+        
+        <DataTemplate DataType="{x:Type vm:MissingImViewModel}">
+            <views:MissingImView />
+        </DataTemplate>
 
         <DataTemplate x:Key="SectionItemTemplate">
             <ContentControl Content="{Binding}"

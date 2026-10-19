@@ -43,6 +43,8 @@ public sealed partial class MainViewModel : ObservableObject
 
     public ImCheckViewModel ImCheck { get; }
 
+    public MissingImViewModel MissingIm { get; }
+
     public ObservableCollection<NavigationSection> Sections { get; } = new();
 
     /// <summary>
@@ -102,6 +104,7 @@ public sealed partial class MainViewModel : ObservableObject
         Batch = new BatchViewModel(services, Processing);
         AnalysisSettings = new AnalysisSettingsViewModel(services, Processing);
         ImCheck = new ImCheckViewModel(services, Processing, ReloadConfiguration);
+        MissingIm = new MissingImViewModel(services, Processing);
 
         BuildNavigation();
 
@@ -160,8 +163,14 @@ public sealed partial class MainViewModel : ObservableObject
         var imCheck = new NavigationTab(
             TabId.ImCheck,
             SectionId.InternetShop,
-            "Проверка для ИМ",
+            "Установленный ИМ",
             ImCheck);
+        
+        var missingIm = new NavigationTab(
+            TabId.MissingIm,
+            SectionId.InternetShop,
+            "Отсутствующий ИМ",
+            MissingIm);
 
         var commercialCode = new NavigationSection(
             SectionId.CommercialCode,
@@ -179,7 +188,8 @@ public sealed partial class MainViewModel : ObservableObject
             "Интернет магазин",
             new[]
             {
-            imCheck
+            imCheck,
+            missingIm
             },
             "SectionInternetShopText");
 
