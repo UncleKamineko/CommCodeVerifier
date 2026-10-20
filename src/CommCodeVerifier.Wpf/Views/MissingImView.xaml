@@ -199,13 +199,40 @@
                             <TextBlock Text="Минимальная доля кодов с признаком"
                                        Margin="0,2" />
 
-                            <TextBox Text="{Binding MinimumImPresenceInFamily,
-                                                    UpdateSourceTrigger=PropertyChanged}"
-                                     Margin="0,0,0,4" />
+                            <TextBlock Text="Пороги для локальной группы кандидата"
+                                       Margin="0,8,0,4"
+                                       FontWeight="Bold" />
 
-                            <TextBlock Text="Минимальное количество референс-кодов"
-                                       Margin="0,2" />
+                            <DataGrid ItemsSource="{Binding LocalGroupThresholds}"
+                                      AutoGenerateColumns="False"
+                                      CanUserAddRows="False"
+                                      CanUserDeleteRows="False"
+                                      CanUserResizeRows="False"
+                                      HeadersVisibility="Column"
+                                      IsReadOnly="False"
+                                      MinHeight="150"
+                                      Margin="0,0,0,8">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn
+                                    Header="Размер локальной группы с кандидатом"
+                                    Binding="{Binding GroupSizeRange}"
+                                    IsReadOnly="True"
+                                    Width="*" />
 
+                                    <DataGridTextColumn
+                            Header="Минимум положительных референсов"
+                                   Binding="{Binding MinimumPositiveReferences,
+                                   UpdateSourceTrigger=PropertyChanged}"
+                                   Width="*" />
+
+                                    <DataGridTextColumn
+                            Header="Минимальная доля положительных"
+                                   Binding="{Binding MinimumPositiveRatio,
+                                   UpdateSourceTrigger=PropertyChanged}"
+                                   Width="*" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            
                             <TextBox Text="{Binding MinimumPositiveReferences,
                                                     UpdateSourceTrigger=PropertyChanged}"
                                      Margin="0,0,0,8" />

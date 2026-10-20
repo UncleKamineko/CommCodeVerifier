@@ -123,4 +123,45 @@ public sealed class MissingImTests
             0.80,
             settings.MissingIm.MinimumCodeSimilarity);
     }
+    [Fact]
+    public void LocalGroupRulesUseSpecifiedSizeBands()
+    {
+        var settings = new MissingImSettings();
+
+        Assert.Equal(
+            1,
+            settings.GetThresholdForGroupSize(5)
+                .MinimumPositiveReferences);
+        Assert.Equal(
+            0.20,
+            settings.GetThresholdForGroupSize(5)
+                .MinimumPositiveRatio);
+
+        Assert.Equal(
+            2,
+            settings.GetThresholdForGroupSize(6)
+                .MinimumPositiveReferences);
+        Assert.Equal(
+            0.50,
+            settings.GetThresholdForGroupSize(20)
+                .MinimumPositiveRatio);
+
+        Assert.Equal(
+            3,
+            settings.GetThresholdForGroupSize(21)
+                .MinimumPositiveReferences);
+        Assert.Equal(
+            0.75,
+            settings.GetThresholdForGroupSize(100)
+                .MinimumPositiveRatio);
+
+        Assert.Equal(
+            5,
+            settings.GetThresholdForGroupSize(101)
+                .MinimumPositiveReferences);
+        Assert.Equal(
+            0.85,
+            settings.GetThresholdForGroupSize(101)
+                .MinimumPositiveRatio);
+    }
 }

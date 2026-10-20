@@ -74,7 +74,96 @@ public sealed partial class MissingImWeightItem :
             CultureInfo.CurrentCulture);
     }
 }
+public sealed partial class MissingImLocalGroupThresholdItem :
+    ObservableObject
+{
+    private readonly MissingImLocalGroupThreshold _settings;
 
+    public MissingImLocalGroupThresholdItem(
+        MissingImLocalGroupThreshold settings,
+        string groupSizeRange)
+    {
+        _settings = settings;
+        GroupSizeRange = groupSizeRange;
+
+        MinimumPositiveReferences =
+            settings.MinimumPositiveReferences.ToString(
+                CultureInfo.CurrentCulture);
+
+        MinimumPositiveRatio =
+            settings.MinimumPositiveRatio.ToString(
+                "0.00",
+                CultureInfo.CurrentCulture);
+    }
+
+    public string GroupSizeRange { get; }
+
+    [ObservableProperty]
+    private string _minimumPositiveReferences = "";
+
+    [ObservableProperty]
+    private string _minimumPositiveRatio = "";
+
+    public bool TryApply(out string error)
+    {
+        error = "";
+
+        if (!int.TryParse(
+                MinimumPositiveReferences,
+                out int references) ||
+            references < 1 ||
+            references > _settings.MaximumGroupSize)
+        {
+            string allowedRange =
+                _settings.MaximumGroupSize == int.MaxValue
+                    ? "целым числом не меньше 1"
+                    : $"целым числом от 1 до {_settings.MaximumGroupSize}";
+
+            error =
+                $"Для диапазона «{GroupSizeRange}» минимум " +
+                $"положительных референсов должен быть {allowedRange}.";
+
+            return false;
+        }
+
+        if (!double.TryParse(
+                MinimumPositiveRatio.Replace(',', '.'),
+                NumberStyles.Float,
+                CultureInfo.InvariantCulture,
+                out double ratio) ||
+            ratio < 0.00 ||
+            ratio > 1.00)
+        {
+            error =
+                $"Для диапазона «{GroupSizeRange}» минимальная доля " +
+                "должна быть от 0,00 до 1,00.";
+
+            return false;
+        }
+
+        _settings.MinimumPositiveReferences = references;
+        _settings.MinimumPositiveRatio = Math.Round(ratio, 2);
+
+        MinimumPositiveRatio =
+            _settings.MinimumPositiveRatio.ToString(
+                "0.00",
+                CultureInfo.CurrentCulture);
+
+        return true;
+    }
+
+    public void Refresh()
+    {
+        MinimumPositiveReferences =
+            _settings.MinimumPositiveReferences.ToString(
+                CultureInfo.CurrentCulture);
+
+        MinimumPositiveRatio =
+            _settings.MinimumPositiveRatio.ToString(
+                "0.00",
+                CultureInfo.CurrentCulture);
+    }
+}
 public sealed partial class MissingImViewModel :
     ObservableObject
 {
@@ -111,6 +200,12 @@ public sealed partial class MissingImViewModel :
         get;
     } = new();
 
+    public ObservableCollection<MissingImLocalGroupThresholdItem>
+    LocalGroupThresholds
+    {
+        get;
+    } = new();
+
     [NotifyCanExecuteChangedFor(nameof(CancelCommand))]
 
     [ObservableProperty]
@@ -141,12 +236,6 @@ public sealed partial class MissingImViewModel :
 
     [ObservableProperty]
     private string _minimumCodeSimilarity = "0,80";
-
-    [ObservableProperty]
-    private string _minimumImPresenceInFamily = "0,80";
-
-    [ObservableProperty]
-    private int _minimumPositiveReferences = 2;
 
     public bool HasError =>
         !string.IsNullOrWhiteSpace(Error);
@@ -227,7 +316,7 @@ public sealed partial class MissingImViewModel :
         _workingSettings = new MissingImSettings();
 
         LoadThresholdsFromSettings();
-
+        BuildWeightItems();
         foreach (var weight in Weights)
             weight.Refresh();
 
@@ -332,32 +421,15 @@ public sealed partial class MissingImViewModel :
             return false;
         }
 
-        if (!TryParseRatio(
-                MinimumImPresenceInFamily,
-                out double presence))
+        foreach (var threshold in LocalGroupThresholds)
         {
-            error =
-                "Некорректная минимальная доля " +
-                "кодов с признаком.";
-            return false;
+            if (!threshold.TryApply(out error))
+                return false;
         }
 
-        if (MinimumPositiveReferences < 1)
-        {
-            error =
-                "Минимальное количество референс-кодов " +
-                "должно быть не меньше 1.";
-            return false;
-        }
-
+        _workingSettings.MinimumCodeSimilarity = codeSimilarity;
         _workingSettings.MinimumCodeSimilarity =
             codeSimilarity;
-
-        _workingSettings.MinimumImPresenceInFamily =
-            presence;
-
-        _workingSettings.MinimumPositiveReferences =
-            MinimumPositiveReferences;
 
         _workingSettings.Normalize();
 
@@ -384,17 +456,29 @@ public sealed partial class MissingImViewModel :
                 "0.00",
                 CultureInfo.CurrentCulture);
 
-        MinimumImPresenceInFamily =
-            _workingSettings.MinimumImPresenceInFamily.ToString(
-                "0.00",
-                CultureInfo.CurrentCulture);
+        LocalGroupThresholds.Clear();
 
-        MinimumPositiveReferences =
-            _workingSettings.MinimumPositiveReferences;
+        int[] maxima = { 5, 20, 100, int.MaxValue };
+        int[] minima = { 1, 6, 21, 101 };
+
+        for (int i = 0;
+             i < _workingSettings.LocalGroupThresholds.Count;
+             i++)
+        {
+            string range = i == 3
+                ? ">100"
+                : $"{minima[i]}–{maxima[i]}";
+
+            LocalGroupThresholds.Add(
+                new MissingImLocalGroupThresholdItem(
+                    _workingSettings.LocalGroupThresholds[i],
+                    range));
+        }
     }
 
     private void BuildWeightItems()
     {
+        Weights.Clear();
         Weights.Add(
             new MissingImWeightItem(
                 "Типы фрагментов",

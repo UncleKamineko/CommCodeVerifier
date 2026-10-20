@@ -29,7 +29,9 @@ public static class MissingImSimilarity
         MissingImCodeStructure reference,
         double articleSimilarity,
         double imPresenceInFamily,
-        MissingImWeights weights)
+        MissingImWeights weights,
+        bool includeImPresence = true,
+        bool includeArticleSimilarity = true)
     {
         weights ??= new MissingImWeights();
         weights.Normalize();
@@ -80,18 +82,24 @@ public static class MissingImSimilarity
                 "Общая длина кода",
                 CompareCodeLength(candidate, reference),
                 weights.CodeLength
-            ),
-            (
-                "Сходство артикулов",
-                Clamp(articleSimilarity),
-                weights.ArticleSimilarity
-            ),
-            (
-                "Доля кодов с признаком в семействе",
-                Clamp(imPresenceInFamily),
-                weights.ImPresenceInFamily
             )
         };
+
+        if (includeArticleSimilarity)
+        {
+            features.Add((
+                "Сходство артикулов",
+                Clamp(articleSimilarity),
+                weights.ArticleSimilarity));
+        }
+
+        if (includeImPresence)
+        {
+            features.Add((
+                "Доля кодов с признаком в локальной группе",
+                Clamp(imPresenceInFamily),
+                weights.ImPresenceInFamily));
+        }
 
         double weightSum = features.Sum(item => item.Weight);
 
@@ -134,6 +142,54 @@ public static class MissingImSimilarity
         };
     }
 
+    /// <summary>
+    /// Структурная оценка для формирования локального окружения.
+    /// Сравнивает последовательности блоков после обязательного префикса;
+    /// вклад правых позиций экспоненциально уменьшается.
+    /// </summary>
+    public static double CompareCodeBlocks(
+        MissingImCodeStructure candidate,
+        MissingImCodeStructure other)
+    {
+        if (!MissingImFirstFragment.AreEqual(
+                candidate.CommercialCode,
+                other.CommercialCode))
+        {
+            return 0.00;
+        }
+
+        var left = Tail(candidate);
+        var right = Tail(other);
+        int count = Math.Max(left.Count, right.Count);
+
+        if (count == 0)
+            return 1.00;
+
+        double score = 0.00;
+        double weight = 0.00;
+
+        for (int i = 0; i < count; i++)
+        {
+            double positionWeight = PositionWeight(i);
+
+            if (i < left.Count &&
+                i < right.Count &&
+                left[i].Type == right[i].Type)
+            {
+                score += TextSimilarity(
+                             left[i].Text,
+                             right[i].Text) *
+                         positionWeight;
+            }
+
+            weight += positionWeight;
+        }
+
+        return weight == 0.00
+            ? 1.00
+            : Clamp(score / weight);
+    }
+
     public static double CompareArticles(
         string candidateArticle,
         string referenceArticle)
@@ -166,188 +222,300 @@ public static class MissingImSimilarity
             : Clamp(1.0 - (double)distance / maxLength);
     }
 
+    // Первый обязательный фрагмент уже проверяется отдельно.
+    // Для следующих позиций используется геометрическое затухание:
+    // правые блоки имеют меньший вклад.
+    private const double PositionDecay = 0.75;
+
+    private static IReadOnlyList<MissingImFragment> Tail(
+        MissingImCodeStructure code) =>
+        code.Fragments
+            .Skip(
+                string.IsNullOrWhiteSpace(code.FirstRequiredFragment)
+                    ? 0
+                    : 1)
+            .ToList();
+
+    private static double PositionWeight(int index) =>
+        Math.Pow(PositionDecay, Math.Max(0, index));
+
     private static double CompareFragmentTypes(
         MissingImCodeStructure left,
         MissingImCodeStructure right)
     {
-        int count = Math.Max(
-            left.Fragments.Count,
-            right.Fragments.Count);
+        var a = Tail(left);
+        var b = Tail(right);
+        int count = Math.Max(a.Count, b.Count);
 
         if (count == 0)
             return 1.00;
 
-        int matches = left.Fragments
-            .Zip(
-                right.Fragments,
-                (a, b) => a.Type == b.Type)
-            .Count(value => value);
+        double score = 0.00;
+        double weight = 0.00;
 
-        return (double)matches / count;
+        for (int i = 0; i < count; i++)
+        {
+            double positionWeight = PositionWeight(i);
+
+            bool matched =
+                i < a.Count &&
+                i < b.Count &&
+                a[i].Type == b[i].Type;
+
+            if (matched)
+                score += positionWeight;
+
+            weight += positionWeight;
+        }
+
+        return weight == 0.00
+            ? 1.00
+            : score / weight;
     }
 
     private static double CompareFragmentPositions(
         MissingImCodeStructure left,
         MissingImCodeStructure right)
     {
-        return left.Fragments.Count ==
-               right.Fragments.Count
+        var a = Tail(left);
+        var b = Tail(right);
+        int count = Math.Max(a.Count, b.Count);
+
+        if (count == 0)
+            return 1.00;
+
+        double score = 0.00;
+        double weight = 0.00;
+
+        for (int i = 0; i < count; i++)
+        {
+            double positionWeight = PositionWeight(i);
+
+            if (i < a.Count && i < b.Count)
+                score += positionWeight;
+
+            weight += positionWeight;
+        }
+
+        return weight == 0.00
             ? 1.00
-            : 0.00;
+            : score / weight;
     }
 
     private static double CompareLetterSegments(
         MissingImCodeStructure left,
-        MissingImCodeStructure right)
-    {
-        var leftLetters = left.Fragments
-            .Where(fragment =>
-                fragment.Type == MissingImFragmentType.Letters)
-            .Select(fragment => fragment.Text)
-            .ToList();
-
-        var rightLetters = right.Fragments
-            .Where(fragment =>
-                fragment.Type == MissingImFragmentType.Letters)
-            .Select(fragment => fragment.Text)
-            .ToList();
-
-        if (leftLetters.Count == 0 &&
-            rightLetters.Count == 0)
-        {
-            return 1.00;
-        }
-
-        if (leftLetters.Count != rightLetters.Count)
-            return 0.00;
-
-        int matches = leftLetters
-            .Zip(rightLetters, string.Equals)
-            .Count(value => value);
-
-        return leftLetters.Count == 0
-            ? 1.00
-            : (double)matches / leftLetters.Count;
-    }
+        MissingImCodeStructure right) =>
+        CompareTypedFragments(
+            left,
+            right,
+            MissingImFragmentType.Letters,
+            (a, b) => TextSimilarity(a.Text, b.Text));
 
     private static double CompareLetterPositions(
         MissingImCodeStructure left,
-        MissingImCodeStructure right)
-    {
-        var leftPositions = left.Fragments
-            .Where(fragment =>
-                fragment.Type == MissingImFragmentType.Letters)
-            .Select(fragment => fragment.Position)
-            .ToList();
-
-        var rightPositions = right.Fragments
-            .Where(fragment =>
-                fragment.Type == MissingImFragmentType.Letters)
-            .Select(fragment => fragment.Position)
-            .ToList();
-
-        return leftPositions.SequenceEqual(rightPositions)
-            ? 1.00
-            : 0.00;
-    }
+        MissingImCodeStructure right) =>
+        CompareTypedPositions(
+            left,
+            right,
+            MissingImFragmentType.Letters);
 
     private static double CompareNumericBlocks(
         MissingImCodeStructure left,
-        MissingImCodeStructure right)
-    {
-        var leftNumbers = left.Fragments
-            .Where(fragment =>
-                fragment.Type == MissingImFragmentType.Digits)
-            .Select(fragment => fragment.Text)
-            .ToList();
-
-        var rightNumbers = right.Fragments
-            .Where(fragment =>
-                fragment.Type == MissingImFragmentType.Digits)
-            .Select(fragment => fragment.Text)
-            .ToList();
-
-        if (leftNumbers.Count == 0 &&
-            rightNumbers.Count == 0)
-        {
-            return 1.00;
-        }
-
-        if (leftNumbers.Count != rightNumbers.Count)
-            return 0.00;
-
-        return 1.00;
-    }
+        MissingImCodeStructure right) =>
+        CompareTypedFragments(
+            left,
+            right,
+            MissingImFragmentType.Digits,
+            (a, b) => TextSimilarity(a.Text, b.Text));
 
     private static double CompareNumericPositions(
         MissingImCodeStructure left,
-        MissingImCodeStructure right)
+        MissingImCodeStructure right) =>
+        CompareTypedPositions(
+            left,
+            right,
+            MissingImFragmentType.Digits);
+
+    private static double CompareTypedFragments(
+        MissingImCodeStructure left,
+        MissingImCodeStructure right,
+        MissingImFragmentType type,
+        Func<MissingImFragment, MissingImFragment, double> compare)
     {
-        var leftPositions = left.Fragments
-            .Where(fragment =>
-                fragment.Type == MissingImFragmentType.Digits)
-            .Select(fragment => fragment.Position)
-            .ToList();
+        var a = Tail(left);
+        var b = Tail(right);
+        int count = Math.Max(a.Count, b.Count);
 
-        var rightPositions = right.Fragments
-            .Where(fragment =>
-                fragment.Type == MissingImFragmentType.Digits)
-            .Select(fragment => fragment.Position)
-            .ToList();
+        if (count == 0)
+            return 1.00;
 
-        return leftPositions.SequenceEqual(rightPositions)
+        double score = 0.00;
+        double weight = 0.00;
+
+        for (int i = 0; i < count; i++)
+        {
+            MissingImFragment? leftFragment =
+                i < a.Count && a[i].Type == type
+                    ? a[i]
+                    : null;
+
+            MissingImFragment? rightFragment =
+                i < b.Count && b[i].Type == type
+                    ? b[i]
+                    : null;
+
+            double positionWeight = PositionWeight(i);
+
+            if (leftFragment == null && rightFragment == null)
+            {
+                score += positionWeight;
+            }
+            else if (leftFragment != null &&
+                     rightFragment != null)
+            {
+                score += compare(leftFragment, rightFragment) *
+                         positionWeight;
+            }
+
+            weight += positionWeight;
+        }
+
+        return weight == 0.00
             ? 1.00
-            : 0.00;
+            : score / weight;
+    }
+
+    private static double CompareTypedPositions(
+        MissingImCodeStructure left,
+        MissingImCodeStructure right,
+        MissingImFragmentType type)
+    {
+        var a = Tail(left);
+        var b = Tail(right);
+        int count = Math.Max(a.Count, b.Count);
+
+        if (count == 0)
+            return 1.00;
+
+        double score = 0.00;
+        double weight = 0.00;
+
+        for (int i = 0; i < count; i++)
+        {
+            bool leftHasType =
+                i < a.Count &&
+                a[i].Type == type;
+
+            bool rightHasType =
+                i < b.Count &&
+                b[i].Type == type;
+
+            double positionWeight = PositionWeight(i);
+
+            if (leftHasType == rightHasType)
+                score += positionWeight;
+
+            weight += positionWeight;
+        }
+
+        return weight == 0.00
+            ? 1.00
+            : score / weight;
     }
 
     private static double CompareFragmentLengths(
         MissingImCodeStructure left,
         MissingImCodeStructure right)
     {
-        int count = Math.Max(
-            left.Fragments.Count,
-            right.Fragments.Count);
+        var a = Tail(left);
+        var b = Tail(right);
+        int count = Math.Max(a.Count, b.Count);
 
         if (count == 0)
             return 1.00;
 
-        double sum = 0.00;
+        double score = 0.00;
+        double weight = 0.00;
 
         for (int i = 0; i < count; i++)
         {
-            if (i >= left.Fragments.Count ||
-                i >= right.Fragments.Count)
+            double positionWeight = PositionWeight(i);
+
+            if (i < a.Count && i < b.Count)
             {
-                continue;
+                int maxLength = Math.Max(
+                    a[i].Length,
+                    b[i].Length);
+
+                double lengthSimilarity = maxLength == 0
+                    ? 1.00
+                    : 1.00 -
+                      (double)Math.Abs(
+                          a[i].Length - b[i].Length) /
+                      maxLength;
+
+                score += lengthSimilarity * positionWeight;
             }
 
-            int leftLength = left.Fragments[i].Length;
-            int rightLength = right.Fragments[i].Length;
-
-            int maxLength = Math.Max(
-                leftLength,
-                rightLength);
-
-            sum += maxLength == 0
-                ? 1.00
-                : 1.00 -
-                  (double)Math.Abs(
-                      leftLength - rightLength) /
-                  maxLength;
+            weight += positionWeight;
         }
 
-        return Clamp(sum / count);
+        return weight == 0.00
+            ? 1.00
+            : Clamp(score / weight);
     }
 
     private static double CompareSeparators(
         MissingImCodeStructure left,
         MissingImCodeStructure right)
     {
-        return left.Separators.SequenceEqual(
-                right.Separators,
-                StringComparer.Ordinal)
+        var a = Tail(left);
+        var b = Tail(right);
+        int count = Math.Max(a.Count, b.Count);
+
+        if (count == 0)
+            return 1.00;
+
+        double score = 0.00;
+        double weight = 0.00;
+
+        for (int i = 0; i < count; i++)
+        {
+            MissingImFragment? leftFragment =
+                i < a.Count &&
+                a[i].Type == MissingImFragmentType.Separator
+                    ? a[i]
+                    : null;
+
+            MissingImFragment? rightFragment =
+                i < b.Count &&
+                b[i].Type == MissingImFragmentType.Separator
+                    ? b[i]
+                    : null;
+
+            double positionWeight = PositionWeight(i);
+
+            if (leftFragment == null &&
+                rightFragment == null)
+            {
+                score += positionWeight;
+            }
+            else if (leftFragment != null &&
+                     rightFragment != null &&
+                     string.Equals(
+                         leftFragment.Text,
+                         rightFragment.Text,
+                         StringComparison.Ordinal))
+            {
+                score += positionWeight;
+            }
+
+            weight += positionWeight;
+        }
+
+        return weight == 0.00
             ? 1.00
-            : 0.00;
+            : score / weight;
     }
 
     private static double CompareCodeLength(
@@ -365,6 +533,34 @@ public static class MissingImSimilarity
             1.00 -
             (double)Math.Abs(
                 left.CodeLength - right.CodeLength) /
+            maxLength);
+    }
+
+    private static double TextSimilarity(
+        string left,
+        string right)
+    {
+        left ??= "";
+        right ??= "";
+
+        if (left.Length == 0 &&
+            right.Length == 0)
+        {
+            return 1.00;
+        }
+
+        int maxLength = Math.Max(
+            left.Length,
+            right.Length);
+
+        if (maxLength == 0)
+            return 1.00;
+
+        return Clamp(
+            1.00 -
+            (double)LevenshteinDistance(
+                left.ToUpperInvariant(),
+                right.ToUpperInvariant()) /
             maxLength);
     }
 
