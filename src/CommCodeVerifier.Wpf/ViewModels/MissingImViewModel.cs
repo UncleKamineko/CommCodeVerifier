@@ -191,6 +191,7 @@ public sealed partial class MissingImViewModel :
 
         _workingSettings =
             services.Settings.Processing.MissingIm.Clone();
+        _workingSettings.Normalize();
         LoadThresholdsFromSettings();
         BuildWeightItems();
     }
@@ -236,6 +237,12 @@ public sealed partial class MissingImViewModel :
 
     [ObservableProperty]
     private string _minimumCodeSimilarity = "0,80";
+
+    [ObservableProperty]
+    private string _positionDecay = "0,75";
+
+    [ObservableProperty]
+    private bool _enableSimilarityDiagnostics = true;
 
     public bool HasError =>
         !string.IsNullOrWhiteSpace(Error);
@@ -421,6 +428,16 @@ public sealed partial class MissingImViewModel :
             return false;
         }
 
+        if (!TryParseRatio(
+        PositionDecay,
+        out double positionDecay))
+        {
+            error =
+                "Некорректный коэффициент позиционного затухания: " +
+                "укажите значение от 0,00 до 1,00.";
+            return false;
+        }
+
         foreach (var threshold in LocalGroupThresholds)
         {
             if (!threshold.TryApply(out error))
@@ -428,8 +445,9 @@ public sealed partial class MissingImViewModel :
         }
 
         _workingSettings.MinimumCodeSimilarity = codeSimilarity;
-        _workingSettings.MinimumCodeSimilarity =
-            codeSimilarity;
+        _workingSettings.MinimumCodeSimilarity = codeSimilarity;
+        _workingSettings.PositionDecay = positionDecay;
+        _workingSettings.EnableSimilarityDiagnostics = EnableSimilarityDiagnostics;
 
         _workingSettings.Normalize();
 
@@ -455,7 +473,13 @@ public sealed partial class MissingImViewModel :
             _workingSettings.MinimumCodeSimilarity.ToString(
                 "0.00",
                 CultureInfo.CurrentCulture);
+        PositionDecay =
+            _workingSettings.PositionDecay.ToString(
+                "0.00",
+                 CultureInfo.CurrentCulture);
 
+        EnableSimilarityDiagnostics =
+            _workingSettings.EnableSimilarityDiagnostics;
         LocalGroupThresholds.Clear();
 
         int[] maxima = { 5, 20, 100, int.MaxValue };

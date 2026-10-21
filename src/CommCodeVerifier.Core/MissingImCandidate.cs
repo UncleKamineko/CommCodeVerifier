@@ -38,4 +38,5 @@ public sealed class MissingImReport
     public int CandidateCount { get; init; }
 
     public List<MissingImCandidate> Candidates { get; } = new();
+    public List<MissingImPairDiagnostic> SimilarityDiagnostics { get; } = new();
 }

@@ -3,22 +3,33 @@ using ClosedXML.Excel;
 namespace CommCodeVerifier.Core;
 
 public static class MissingImChecker
-{// К локальной группе относятся соседи, чья структурная оценка
- // отстаёт от лучшего найденного совпадения не более чем на 2 п.п.
+{
+    // В локальную группу входят соседи, структурная оценка которых
+    // отстаёт от лучшего найденного совпадения не более чем на 2 п.п.
     private const double LocalGroupScoreWindow = 0.02;
+
+    public const string HeaderArticle = "Номенклатура.Артикул";
+    public const string HeaderCode = "Коммерческий код";
+    public const string HeaderGroup =
+        "Номенклатура.Группа выгрузки ИМ (Общие)";
+
+    // Заголовок «Признак ИМ» из шаблона не нужен: наличие признака
+    // определяется по значению предыдущего столбца.
+    public const string SourceHeaderArticle = "Номенклатура.Артикул";
+    public const string SourceHeaderCode = "Коммерческий код";
+    public const string SourceHeaderGroup =
+        "Номенклатура.Группа выгрузки ИМ (Общие)";
+
     public static bool ValidateInputTemplate(
-    string sourcePath,
-    out string error)
+        string sourcePath,
+        out string error)
     {
         error = "";
 
         try
         {
-            using var workbook =
-                new XLWorkbook(sourcePath);
-
-            var worksheet =
-                workbook.Worksheet(1);
+            using var workbook = new XLWorkbook(sourcePath);
+            var worksheet = workbook.Worksheet(1);
 
             var expectedHeaders = new[]
             {
@@ -31,10 +42,10 @@ public static class MissingImChecker
                  column < expectedHeaders.Length;
                  column++)
             {
-                string actualHeader =
-                    worksheet.Cell(1, column + 1)
-                        .GetFormattedString()
-                        .Trim();
+                string actualHeader = worksheet
+                    .Cell(1, column + 1)
+                    .GetFormattedString()
+                    .Trim();
 
                 if (actualHeader.Equals(
                         expectedHeaders[column],
@@ -51,15 +62,11 @@ public static class MissingImChecker
                 return false;
             }
 
-            var lastRow =
-                worksheet.LastRowUsed();
+            var lastRow = worksheet.LastRowUsed();
 
-            if (lastRow == null ||
-                lastRow.RowNumber() < 2)
+            if (lastRow == null || lastRow.RowNumber() < 2)
             {
-                error =
-                    "в файле отсутствуют строки с данными";
-
+                error = "в файле отсутствуют строки с данными";
                 return false;
             }
 
@@ -75,13 +82,7 @@ public static class MissingImChecker
             return false;
         }
     }
-    public const string HeaderArticle = "Номенклатура.Артикул";
-    public const string HeaderCode = "Коммерческий код";
-    public const string HeaderGroup = "Номенклатура.Группа выгрузки ИМ (Общие)";
-    // public const string HeaderIm = "Признак ИМ"; - лишний заголовок, признак ИМ фактически расположен в предыдущем столбце
-    public const string SourceHeaderArticle = "Номенклатура.Артикул";
-    public const string SourceHeaderCode = "Коммерческий код";
-    public const string SourceHeaderGroup = "Номенклатура.Группа выгрузки ИМ (Общие)";
+
     public static MissingImReport Run(
         string sourcePath,
         MissingImSettings settings,
@@ -111,17 +112,19 @@ public static class MissingImChecker
             .ToList();
 
         var itemsByFirstFragment = structures
-    .Where(item => !string.IsNullOrWhiteSpace(
-        item.Structure.FirstRequiredFragment))
-    .GroupBy(
-        item => item.Structure.FirstRequiredFragment!,
-        StringComparer.Ordinal)
-    .ToDictionary(
-        group => group.Key,
-        group => group.ToList(),
-        StringComparer.Ordinal);
+            .Where(item => !string.IsNullOrWhiteSpace(
+                item.Structure.FirstRequiredFragment))
+            .GroupBy(
+                item => item.Structure.FirstRequiredFragment!,
+                StringComparer.Ordinal)
+            .ToDictionary(
+                group => group.Key,
+                group => group.ToList(),
+                StringComparer.Ordinal);
 
         var candidates = new List<MissingImCandidate>();
+        var similarityDiagnostics =
+            new List<MissingImPairDiagnostic>();
 
         foreach (var candidate in structures.Where(item => !item.HasIm))
         {
@@ -135,6 +138,19 @@ public static class MissingImChecker
                     firstFragment,
                     out var prefixItems))
             {
+                if (settings.EnableSimilarityDiagnostics)
+                {
+                    similarityDiagnostics.Add(
+                        new MissingImPairDiagnostic
+                        {
+                            CandidateArticle = candidate.Article,
+                            CandidateCode = candidate.CommercialCode,
+                            CandidateDecision =
+                                "Отклонён: не найден обязательный " +
+                                "первый фрагмент кода."
+                        });
+                }
+
                 continue;
             }
 
@@ -151,7 +167,8 @@ public static class MissingImChecker
                 double blockSimilarity =
                     MissingImSimilarity.CompareCodeBlocks(
                         candidate.Structure,
-                        item.Structure);
+                        item.Structure,
+                        settings.PositionDecay);
 
                 rankedNeighbors.Add((item, blockSimilarity));
             }
@@ -173,7 +190,8 @@ public static class MissingImChecker
             }
 
             int groupSize = localGroup.Count;
-            int positiveCount = localGroup.Count(item => item.HasIm);
+            int positiveCount =
+                localGroup.Count(item => item.HasIm);
 
             double positiveRatio = groupSize == 0
                 ? 0.00
@@ -182,11 +200,18 @@ public static class MissingImChecker
             var threshold =
                 settings.GetThresholdForGroupSize(groupSize);
 
-            if (positiveCount < threshold.MinimumPositiveReferences ||
-                positiveRatio < threshold.MinimumPositiveRatio)
-            {
-                continue;
-            }
+            bool passesGroupThreshold =
+                positiveCount >=
+                    threshold.MinimumPositiveReferences &&
+                positiveRatio >=
+                    threshold.MinimumPositiveRatio;
+
+            string groupFailureReason =
+                "Отклонён по локальной группе: положительных " +
+                $"референсов {positiveCount}/" +
+                $"{threshold.MinimumPositiveReferences}, " +
+                $"доля {positiveRatio:P2}/" +
+                $"{threshold.MinimumPositiveRatio:P2}.";
 
             var references = localGroup
                 .Where(item => item.HasIm)
@@ -194,6 +219,9 @@ public static class MissingImChecker
 
             MissingImCandidate? best = null;
             double bestScore = -1.00;
+
+            var candidatePairDiagnostics =
+                new List<MissingImPairDiagnostic>();
 
             foreach (var reference in references)
             {
@@ -215,7 +243,50 @@ public static class MissingImChecker
                         reference.Structure,
                         articleSimilarity,
                         positiveRatio,
-                        settings.Weights);
+                        settings.Weights,
+                        positionDecay: settings.PositionDecay,
+                        includeDiagnostics:
+                            settings.EnableSimilarityDiagnostics);
+
+                if (settings.EnableSimilarityDiagnostics)
+                {
+                    candidatePairDiagnostics.Add(
+                        new MissingImPairDiagnostic
+                        {
+                            CandidateArticle = candidate.Article,
+                            CandidateCode = candidate.CommercialCode,
+                            ReferenceArticle = reference.Article,
+                            ReferenceCode = reference.CommercialCode,
+
+                            LocalGroupSize = groupSize,
+                            PositiveReferenceCount = positiveCount,
+                            MinimumPositiveReferences =
+                                threshold.MinimumPositiveReferences,
+                            PositiveRatioPercent =
+                                positiveRatio * 100.00,
+                            MinimumPositiveRatioPercent =
+                                threshold.MinimumPositiveRatio * 100.00,
+
+                            NeighborhoodSimilarityPercent =
+                                MissingImSimilarity.CompareCodeBlocks(
+                                    candidate.Structure,
+                                    reference.Structure,
+                                    settings.PositionDecay) * 100.00,
+
+                            SimilarityPercent = similarity.ScorePercent,
+                            MinimumSimilarityPercent =
+                                settings.MinimumCodeSimilarity * 100.00,
+
+                            PairDecision =
+                                similarity.Score >=
+                                settings.MinimumCodeSimilarity
+                                    ? "Пара проходит порог сходства."
+                                    : "Пара ниже порога сходства.",
+
+                            Features = similarity.FeatureDiagnostics,
+                            Blocks = similarity.BlockDiagnostics
+                        });
+                }
 
                 if (similarity.Score <= bestScore)
                     continue;
@@ -233,8 +304,9 @@ public static class MissingImChecker
                         2),
                     Basis =
                         $"Первый фрагмент «{firstFragment}» совпадает; " +
-                        $"локальная группа: {positiveCount} положительных из " +
-                        $"{groupSize} кодов ({positiveRatio:P2}); " +
+                        $"локальная группа: {positiveCount} " +
+                        $"положительных из {groupSize} кодов " +
+                        $"({positiveRatio:P2}); " +
                         $"{similarity.Basis}",
                     Signature = similarity.Signature,
                     MatchedSegments = similarity.MatchedSegments,
@@ -247,10 +319,69 @@ public static class MissingImChecker
                 };
             }
 
-            if (best == null)
-                continue;
+            string candidateDecision;
 
-            if (best.SimilarityPercent <
+            if (!passesGroupThreshold)
+            {
+                candidateDecision = groupFailureReason;
+            }
+            else if (best == null)
+            {
+                candidateDecision =
+                    "Отклонён: в локальной группе нет " +
+                    "положительного референса.";
+            }
+            else if (best.SimilarityPercent <
+                     settings.MinimumCodeSimilarity * 100.0)
+            {
+                candidateDecision =
+                    $"Отклонён: максимальное сходство " +
+                    $"{best.SimilarityPercent:F2}% ниже порога " +
+                    $"{settings.MinimumCodeSimilarity * 100.0:F2}%.";
+            }
+            else
+            {
+                candidateDecision =
+                    "Прошёл отбор и добавлен в список кандидатов.";
+            }
+
+            foreach (var pairDiagnostic in candidatePairDiagnostics)
+            {
+                pairDiagnostic.CandidateDecision = candidateDecision;
+            }
+
+            if (settings.EnableSimilarityDiagnostics)
+            {
+                if (candidatePairDiagnostics.Count == 0)
+                {
+                    similarityDiagnostics.Add(
+                        new MissingImPairDiagnostic
+                        {
+                            CandidateArticle = candidate.Article,
+                            CandidateCode = candidate.CommercialCode,
+                            LocalGroupSize = groupSize,
+                            PositiveReferenceCount = positiveCount,
+                            MinimumPositiveReferences =
+                                threshold.MinimumPositiveReferences,
+                            PositiveRatioPercent =
+                                positiveRatio * 100.00,
+                            MinimumPositiveRatioPercent =
+                                threshold.MinimumPositiveRatio * 100.00,
+                            MinimumSimilarityPercent =
+                                settings.MinimumCodeSimilarity * 100.00,
+                            CandidateDecision = candidateDecision
+                        });
+                }
+                else
+                {
+                    similarityDiagnostics.AddRange(
+                        candidatePairDiagnostics);
+                }
+            }
+
+            if (!passesGroupThreshold ||
+                best == null ||
+                best.SimilarityPercent <
                 settings.MinimumCodeSimilarity * 100.0)
             {
                 continue;
@@ -261,12 +392,16 @@ public static class MissingImChecker
 
         string outputFile = "";
 
-        if (candidates.Count > 0)
+        if (candidates.Count > 0 ||
+            settings.EnableSimilarityDiagnostics)
         {
-            outputFile =
-                MissingImReportWriter.Write(
-                    outputFolder,
-                    candidates);
+            outputFile = MissingImReportWriter.Write(
+                outputFolder,
+                candidates,
+                settings.EnableSimilarityDiagnostics
+                    ? similarityDiagnostics
+                    : null);
+
             if (!File.Exists(outputFile))
             {
                 throw new IOException(
@@ -284,6 +419,7 @@ public static class MissingImChecker
         };
 
         report.Candidates.AddRange(candidates);
+        report.SimilarityDiagnostics.AddRange(similarityDiagnostics);
 
         return report;
     }
@@ -293,14 +429,9 @@ public static class MissingImChecker
         IProgress<int>? progress,
         CancellationToken cancellationToken)
     {
-        using var workbook =
-            new XLWorkbook(sourcePath);
-
-        var worksheet =
-            workbook.Worksheet(1);
-
-        var last =
-            worksheet.LastRowUsed();
+        using var workbook = new XLWorkbook(sourcePath);
+        var worksheet = workbook.Worksheet(1);
+        var last = worksheet.LastRowUsed();
 
         var rows = new List<MissingImInputRow>();
 
@@ -313,20 +444,21 @@ public static class MissingImChecker
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            string article =
-                worksheet.Cell(row, 1)
-                    .GetFormattedString()
-                    .Trim();
+            string article = worksheet
+                .Cell(row, 1)
+                .GetFormattedString()
+                .Trim();
 
-            string commercialCode =
-                worksheet.Cell(row, 2)
-                    .GetFormattedString()
-                    .Trim();
+            string commercialCode = worksheet
+                .Cell(row, 2)
+                .GetFormattedString()
+                .Trim();
 
-            string group =
-                worksheet.Cell(row, 3)
-                    .GetFormattedString()
-                    .Trim();
+            string group = worksheet
+                .Cell(row, 3)
+                .GetFormattedString()
+                .Trim();
+
             bool hasIm = group.Length > 0;
 
             if (article.Length == 0 &&

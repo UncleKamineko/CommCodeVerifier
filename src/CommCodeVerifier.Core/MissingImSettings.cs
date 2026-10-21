@@ -32,6 +32,16 @@ public sealed class MissingImSettings
     public double MinimumCodeSimilarity { get; set; } = 0.80;
 
     /// <summary>
+    /// Коэффициент затухания вклада следующих блоков кода.
+    /// Значение находится в диапазоне 0,00–1,00.
+    /// </summary>
+    public double PositionDecay { get; set; } = 0.75;
+
+    /// <summary>
+    /// Включает формирование листа с подробной диагностикой сходства.
+    /// </summary>
+    public bool EnableSimilarityDiagnostics { get; set; } = true;
+    /// <summary>
     /// Пороги отбора для локальной группы, включающей проверяемого кандидата.
     /// </summary>
     public List<MissingImLocalGroupThreshold> LocalGroupThresholds { get; set; } =
@@ -64,6 +74,10 @@ public sealed class MissingImSettings
 
         MinimumCodeSimilarity = Clamp(
             MinimumCodeSimilarity,
+            0.00,
+            1.00);
+        PositionDecay = Clamp(
+            PositionDecay,
             0.00,
             1.00);
 
@@ -110,6 +124,8 @@ public sealed class MissingImSettings
         {
             Weights = (Weights ?? new MissingImWeights()).Clone(),
             MinimumCodeSimilarity = MinimumCodeSimilarity,
+            PositionDecay = PositionDecay,
+            EnableSimilarityDiagnostics = EnableSimilarityDiagnostics,
             LocalGroupThresholds = (LocalGroupThresholds ??
                 CreateDefaultLocalGroupThresholds())
                 .Where(rule => rule != null)

@@ -164,4 +164,46 @@ public sealed class MissingImTests
             settings.GetThresholdForGroupSize(101)
                 .MinimumPositiveRatio);
     }
+    [Fact]
+    public void PositionDecayIsReportedForEachBlockAndAffectsStructuralScore()
+    {
+        var candidate =
+            MissingImCodeParser.Parse("A-1", "19A1B");
+
+        var reference =
+            MissingImCodeParser.Parse("A-1", "19C1B");
+
+        double decayed = MissingImSimilarity.CompareCodeBlocks(
+            candidate,
+            reference,
+            positionDecay: 0.75);
+
+        double noDecay = MissingImSimilarity.CompareCodeBlocks(
+            candidate,
+            reference,
+            positionDecay: 1.00);
+
+        Assert.True(decayed < noDecay);
+
+        var detailed = MissingImSimilarity.Compare(
+            candidate,
+            reference,
+            articleSimilarity: 1.00,
+            imPresenceInFamily: 1.00,
+            weights: new MissingImWeights(),
+            positionDecay: 0.75,
+            includeDiagnostics: true);
+
+        Assert.Equal(3, detailed.BlockDiagnostics.Count);
+        Assert.Equal(
+            1.00,
+            detailed.BlockDiagnostics[0].PositionWeight);
+        Assert.Equal(
+            0.75,
+            detailed.BlockDiagnostics[1].PositionWeight);
+        Assert.Equal(
+            0.5625,
+            detailed.BlockDiagnostics[2].PositionWeight);
+
+    }
 }

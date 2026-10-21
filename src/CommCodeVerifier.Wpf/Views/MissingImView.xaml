@@ -192,10 +192,19 @@
                             <TextBlock Text="Минимальное сходство кода"
                                        Margin="0,2" />
 
-                            <TextBox Text="{Binding MinimumCodeSimilarity,
-                                                    UpdateSourceTrigger=PropertyChanged}"
+                            <TextBox Text="{Binding MinimumCodeSimilarity, UpdateSourceTrigger=PropertyChanged}"
                                      Margin="0,0,0,4" />
 
+                            <TextBlock Text="Позиционное затухание (0,00–1,00)"
+                                       Margin="0,2" />
+
+                            <TextBox Text="{Binding PositionDecay, UpdateSourceTrigger=PropertyChanged}"
+                                     Margin="0,0,0,4" />
+
+                            <CheckBox Content="Формировать отладочный лист сходства"
+                                      IsChecked="{Binding EnableSimilarityDiagnostics, UpdateSourceTrigger=PropertyChanged}"
+                                      Margin="0,2,0,8" />
+                            
                             <TextBlock Text="Минимальная доля кодов с признаком"
                                        Margin="0,2" />
 

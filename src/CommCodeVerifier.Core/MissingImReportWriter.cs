@@ -17,7 +17,8 @@ public static class MissingImReportWriter
     }
     public static string Write(
         string outputFolder,
-        IReadOnlyCollection<MissingImCandidate> candidates)
+        IReadOnlyCollection<MissingImCandidate> candidates,
+        IReadOnlyCollection<MissingImPairDiagnostic>? diagnostics = null)
     {
         Directory.CreateDirectory(outputFolder);
         string FileName = CreateFileName();
@@ -56,6 +57,12 @@ public static class MissingImReportWriter
         WriteDetailsSheet(
             workbook,
             candidates);
+        if (diagnostics != null)
+        {
+            WriteSimilarityDiagnosticsSheet(
+                workbook,
+                diagnostics);
+        }
 
         workbook.SaveAs(path);
             if (!File.Exists(path))
@@ -208,7 +215,185 @@ public static class MissingImReportWriter
                 headers.Length)
             .Style.Alignment.WrapText = true;
     }
+    private static void WriteSimilarityDiagnosticsSheet(
+    XLWorkbook workbook,
+    IReadOnlyCollection<MissingImPairDiagnostic> diagnostics)
+    {
+        var worksheet =
+            workbook.AddWorksheet("Диагностика сходства");
 
+        string[] headers =
+        {
+        "Тип строки",
+        "Артикул кандидата",
+        "Код кандидата",
+        "Артикул референса",
+        "Код референса",
+        "Размер локальной группы",
+        "Положительных референсов",
+        "Минимум положительных референсов",
+        "Доля положительных, %",
+        "Минимальная доля, %",
+        "Структурная близость локальной группы, %",
+        "Сходство пары, %",
+        "Порог сходства, %",
+        "Решение по паре",
+        "Решение по кандидату",
+        "Характеристика",
+        "Оценка характеристики, %",
+        "Вес характеристики",
+        "Доля веса, %",
+        "Вклад в итог, п.п.",
+        "Эффект включения (п.п.; + повышает, − снижает)",
+        "Позиция после префикса",
+        "Блок кандидата",
+        "Блок референса",
+        "Тип блока кандидата",
+        "Тип блока референса",
+        "Сходство блоков, %",
+        "Позиционный коэффициент"
+    };
+
+        for (int column = 0; column < headers.Length; column++)
+            worksheet.Cell(1, column + 1).Value = headers[column];
+
+        worksheet.Row(1).Style.Font.Bold = true;
+
+        int row = 2;
+
+        foreach (var diagnostic in diagnostics
+                     .OrderBy(
+                         item => item.CandidateCode,
+                         StringComparer.Ordinal)
+                     .ThenBy(
+                         item => item.ReferenceCode,
+                         StringComparer.Ordinal))
+        {
+            WriteDiagnosticBaseRow(
+                worksheet,
+                row++,
+                "Итог пары",
+                diagnostic);
+
+            foreach (var feature in diagnostic.Features)
+            {
+                int featureRow = row++;
+
+                WriteDiagnosticBaseRow(
+                    worksheet,
+                    featureRow,
+                    "Характеристика",
+                    diagnostic);
+
+                worksheet.Cell(featureRow, 16).Value = feature.Name;
+                worksheet.Cell(featureRow, 17).Value =
+                    feature.Similarity * 100.00;
+                worksheet.Cell(featureRow, 18).Value = feature.Weight;
+                worksheet.Cell(featureRow, 19).Value =
+                    feature.WeightSharePercent;
+                worksheet.Cell(featureRow, 20).Value =
+                    feature.ContributionPercent;
+                worksheet.Cell(featureRow, 21).Value =
+                    feature.EffectOnScorePercentagePoints;
+            }
+
+            foreach (var block in diagnostic.Blocks)
+            {
+                int blockRow = row++;
+
+                WriteDiagnosticBaseRow(
+                    worksheet,
+                    blockRow,
+                    "Блок",
+                    diagnostic);
+
+                worksheet.Cell(blockRow, 22).Value =
+                    block.PositionAfterRequiredFragment;
+                worksheet.Cell(blockRow, 23).Value =
+                    block.CandidateBlock;
+                worksheet.Cell(blockRow, 24).Value =
+                    block.ReferenceBlock;
+                worksheet.Cell(blockRow, 25).Value =
+                    block.CandidateType;
+                worksheet.Cell(blockRow, 26).Value =
+                    block.ReferenceType;
+                worksheet.Cell(blockRow, 27).Value =
+                    block.BlockSimilarity * 100.00;
+                worksheet.Cell(blockRow, 28).Value =
+                    block.PositionWeight;
+            }
+        }
+
+        FormatWorksheet(
+            worksheet,
+            Math.Max(1, row - 1),
+            headers.Length);
+
+        worksheet.Column(1).Width = 18;
+        worksheet.Column(2).Width = 28;
+        worksheet.Column(3).Width = 28;
+        worksheet.Column(4).Width = 28;
+        worksheet.Column(5).Width = 28;
+        worksheet.Column(11).Width = 20;
+        worksheet.Column(14).Width = 30;
+        worksheet.Column(15).Width = 48;
+        worksheet.Column(16).Width = 42;
+        worksheet.Column(23).Width = 22;
+        worksheet.Column(24).Width = 22;
+
+        foreach (int column in new[]
+                 {
+                 9, 10, 11, 12, 13, 17, 19, 20, 21, 27
+             })
+        {
+            worksheet.Column(column)
+                .Style.NumberFormat.Format = "0.00";
+        }
+
+        foreach (int column in new[] { 18, 28 })
+        {
+            worksheet.Column(column)
+                .Style.NumberFormat.Format = "0.0000";
+        }
+
+        worksheet.Range(
+                1,
+                1,
+                Math.Max(2, row - 1),
+                headers.Length)
+            .Style.Alignment.WrapText = true;
+    }
+
+    private static void WriteDiagnosticBaseRow(
+        IXLWorksheet worksheet,
+        int row,
+        string rowType,
+        MissingImPairDiagnostic diagnostic)
+    {
+        worksheet.Cell(row, 1).Value = rowType;
+        worksheet.Cell(row, 2).Value = diagnostic.CandidateArticle;
+        worksheet.Cell(row, 3).Value = diagnostic.CandidateCode;
+        worksheet.Cell(row, 4).Value = diagnostic.ReferenceArticle;
+        worksheet.Cell(row, 5).Value = diagnostic.ReferenceCode;
+        worksheet.Cell(row, 6).Value = diagnostic.LocalGroupSize;
+        worksheet.Cell(row, 7).Value = diagnostic.PositiveReferenceCount;
+        worksheet.Cell(row, 8).Value =
+            diagnostic.MinimumPositiveReferences;
+        worksheet.Cell(row, 9).Value =
+            diagnostic.PositiveRatioPercent;
+        worksheet.Cell(row, 10).Value =
+            diagnostic.MinimumPositiveRatioPercent;
+        worksheet.Cell(row, 11).Value =
+            diagnostic.NeighborhoodSimilarityPercent;
+        worksheet.Cell(row, 12).Value =
+            diagnostic.SimilarityPercent;
+        worksheet.Cell(row, 13).Value =
+            diagnostic.MinimumSimilarityPercent;
+        worksheet.Cell(row, 14).Value =
+            diagnostic.PairDecision;
+        worksheet.Cell(row, 15).Value =
+            diagnostic.CandidateDecision;
+    }
     private static void FormatWorksheet(
         IXLWorksheet worksheet,
         int lastRow,
