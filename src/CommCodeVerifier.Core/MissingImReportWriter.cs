@@ -384,10 +384,10 @@ public static class MissingImReportWriter
     }
 
     private static void WriteDiagnosticBaseRow(
-        IXLWorksheet worksheet,
-        int row,
-        string rowType,
-        MissingImPairDiagnostic diagnostic)
+    IXLWorksheet worksheet,
+    int row,
+    string rowType,
+    MissingImPairDiagnostic diagnostic)
     {
         worksheet.Cell(row, 1).Value = rowType;
         worksheet.Cell(row, 2).Value = diagnostic.CandidateArticle;
@@ -412,6 +412,18 @@ public static class MissingImReportWriter
             diagnostic.PairDecision;
         worksheet.Cell(row, 15).Value =
             diagnostic.CandidateDecision;
+
+        // Колонки 29 и 30 уже есть в заголовках листа диагностики.
+        worksheet.Cell(row, 29).Value =
+            diagnostic.FirstCandidateNumericFragment;
+        worksheet.Cell(row, 30).Value =
+            diagnostic.FirstReferenceNumericFragment;
+
+        if (diagnostic.FirstNumericFragmentDiffers)
+        {
+            worksheet.Range(row, 1, row, 30)
+                .Style.Fill.BackgroundColor = XLColor.Yellow;
+        }
     }
     private static void FormatWorksheet(
         IXLWorksheet worksheet,
