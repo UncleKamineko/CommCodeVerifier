@@ -251,7 +251,9 @@ public static class MissingImReportWriter
         "Тип блока кандидата",
         "Тип блока референса",
         "Сходство блоков, %",
-        "Позиционный коэффициент"
+        "Позиционный коэффициент",
+        "Первый числовой фрагмент кандидата",
+        "Первый числовой фрагмент референса"
     };
 
         for (int column = 0; column < headers.Length; column++)
@@ -286,8 +288,15 @@ public static class MissingImReportWriter
                     diagnostic);
 
                 worksheet.Cell(featureRow, 16).Value = feature.Name;
-                worksheet.Cell(featureRow, 17).Value =
-                    feature.Similarity * 100.00;
+                if (feature.IsApplicable)
+                {
+                    worksheet.Cell(featureRow, 17).Value =
+                        feature.Similarity * 100.00;
+                }
+                else
+                {
+                    worksheet.Cell(featureRow, 17).Value = "Н/П";
+                }
                 worksheet.Cell(featureRow, 18).Value = feature.Weight;
                 worksheet.Cell(featureRow, 19).Value =
                     feature.WeightSharePercent;
@@ -321,6 +330,16 @@ public static class MissingImReportWriter
                     block.BlockSimilarity * 100.00;
                 worksheet.Cell(blockRow, 28).Value =
                     block.PositionWeight;
+                worksheet.Cell(row, 29).Value =
+                    diagnostic.FirstCandidateNumericFragment;
+                worksheet.Cell(row, 30).Value =
+                    diagnostic.FirstReferenceNumericFragment;
+
+                if (diagnostic.FirstNumericFragmentDiffers)
+                {
+                    worksheet.Range(row, 1, row, 30)
+                        .Style.Fill.BackgroundColor = XLColor.Yellow;
+                }
             }
         }
 

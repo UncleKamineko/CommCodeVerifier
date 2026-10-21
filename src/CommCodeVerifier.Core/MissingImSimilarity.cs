@@ -1,9 +1,8 @@
 namespace CommCodeVerifier.Core;
 
-// Замечание - Приведённая модель возможно потребует доработки в ходе реализации так, чтобы буквенно-цифровые блоки M2, L100
-// и дроби 6-1/8 сравнивались по внутренним структурным сегментам, а не только как отдельные простые фрагменты.
 public sealed class MissingImSimilarityResult
 {
+
     public double Score { get; init; }
 
     public double ScorePercent =>
@@ -28,6 +27,7 @@ public sealed class MissingImSimilarityResult
 
 public static class MissingImSimilarity
 {
+    public const double DefaultPositionDecay = 0.75;
     public static MissingImSimilarityResult Compare(
         MissingImCodeStructure candidate,
         MissingImCodeStructure reference,
@@ -36,14 +36,14 @@ public static class MissingImSimilarity
         MissingImWeights weights,
         bool includeImPresence = true,
         bool includeArticleSimilarity = true,
-        double positionDecay = 0.75,
+        double positionDecay = DefaultPositionDecay,
         bool includeDiagnostics = false)
     {
         weights ??= new MissingImWeights();
         weights.Normalize();
         positionDecay = Clamp(positionDecay);
 
-        var features = new List<(string Name, double Value, double Weight)>
+        var features = new List<(string Name, double? Value, double Weight)>
         {
             (
                 "Типы фрагментов",
@@ -108,10 +108,17 @@ public static class MissingImSimilarity
                 weights.ImPresenceInFamily));
         }
 
-        double weightSum = features.Sum(item => item.Weight);
+        var applicableFeatures = features
+            .Where(item => item.Value.HasValue)
+            .ToList();
+
+        double weightSum = applicableFeatures
+            .Sum(item => item.Weight);
+
         double weightedScore = weightSum <= 0.00
             ? 0.00
-            : features.Sum(item => item.Value * item.Weight) / weightSum;
+            : applicableFeatures.Sum(
+                item => item.Value!.Value * item.Weight) / weightSum;
 
         var featureDiagnostics = includeDiagnostics
             ? features
@@ -124,23 +131,23 @@ public static class MissingImSimilarity
                 .ToList()
             : new List<MissingImFeatureDiagnostic>();
 
-        var activeFeatures = features
+        var activeFeatures = applicableFeatures
             .Where(item => item.Weight > 0.00)
             .ToList();
 
         int matched = activeFeatures.Count(
-            item => item.Value >= 0.50);
+            item => item.Value!.Value >= 0.50);
 
         string matchedSegments = string.Join(
             "; ",
             activeFeatures
-                .Where(item => item.Value >= 0.50)
+                .Where(item => item.Value!.Value >= 0.50)
                 .Select(item => item.Name));
 
         string differentSegments = string.Join(
             "; ",
             activeFeatures
-                .Where(item => item.Value < 0.50)
+                .Where(item => item.Value!.Value < 0.50)
                 .Select(item => item.Name));
 
         return new MissingImSimilarityResult
@@ -167,7 +174,7 @@ public static class MissingImSimilarity
     public static double CompareCodeBlocks(
         MissingImCodeStructure candidate,
         MissingImCodeStructure other,
-        double positionDecay = 0.75)
+        double positionDecay = DefaultPositionDecay)
     {
         if (!MissingImFirstFragment.AreEqual(
                 candidate.CommercialCode,
@@ -208,8 +215,9 @@ public static class MissingImSimilarity
     }
 
     public static double CompareArticles(
-        string candidateArticle,
-        string referenceArticle)
+    string candidateArticle,
+    string referenceArticle,
+    double positionDecay = DefaultPositionDecay)
     {
         candidateArticle ??= "";
         referenceArticle ??= "";
@@ -226,48 +234,112 @@ public static class MissingImSimilarity
             return 0.00;
         }
 
-        int distance = LevenshteinDistance(
-            candidateArticle,
-            referenceArticle);
+        positionDecay = Clamp(positionDecay);
 
-        int maxLength = Math.Max(
-            candidateArticle.Length,
-            referenceArticle.Length);
+        var left = GetArticleComparisonFragments(candidateArticle);
+        var right = GetArticleComparisonFragments(referenceArticle);
 
-        return maxLength == 0
+        int count = Math.Max(left.Count, right.Count);
+
+        if (count == 0)
+            return 1.00;
+
+        double score = 0.00;
+        double weight = 0.00;
+
+        for (int i = 0; i < count; i++)
+        {
+            double positionWeight =
+                PositionWeight(i, positionDecay);
+
+            if (i < left.Count &&
+                i < right.Count &&
+                left[i].Type == right[i].Type)
+            {
+                score += TextSimilarity(
+                             left[i].Text,
+                             right[i].Text) *
+                         positionWeight;
+            }
+
+            weight += positionWeight;
+        }
+
+        return weight <= 0.00
             ? 1.00
-            : Clamp(1.0 - (double)distance / maxLength);
+            : Clamp(score / weight);
     }
-
-    private static MissingImFeatureDiagnostic CreateFeatureDiagnostic(
-        string name,
-        double value,
-        double weight,
-        double totalWeight,
-        double totalScore)
+    private static IReadOnlyList<MissingImFragment>
+    GetArticleComparisonFragments(string article)
     {
-        double weightShare = totalWeight <= 0.00
-            ? 0.00
-            : weight / totalWeight;
+        var fragments = MissingImCodeParser
+            .Parse(article, article)
+            .Fragments;
 
-        double contribution = value * weightShare;
-        double remainingWeight = totalWeight - weight;
+        int firstNumericIndex = -1;
+
+        for (int i = 0; i < fragments.Count; i++)
+        {
+            if (fragments[i].Type != MissingImFragmentType.Digits)
+                continue;
+
+            firstNumericIndex = i;
+            break;
+        }
+
+        // Если число найдено, сравнение начинается с него.
+        // Если числовых фрагментов нет, сравниваем с начала артикула.
+        return firstNumericIndex >= 0
+            ? fragments.Skip(firstNumericIndex).ToList()
+            : fragments;
+    }
+    private static MissingImFeatureDiagnostic CreateFeatureDiagnostic(
+    string name,
+    double? value,
+    double configuredWeight,
+    double totalApplicableWeight,
+    double totalScore)
+    {
+        if (!value.HasValue)
+        {
+            return new MissingImFeatureDiagnostic
+            {
+                Name = name,
+                IsApplicable = false,
+                Similarity = 0.00,
+                Weight = configuredWeight,
+                WeightSharePercent = 0.00,
+                ContributionPercent = 0.00,
+                EffectOnScorePercentagePoints = 0.00
+            };
+        }
+
+        double weightShare = totalApplicableWeight <= 0.00
+            ? 0.00
+            : configuredWeight / totalApplicableWeight;
+
+        double contribution = value.Value * weightShare;
+        double remainingWeight =
+            totalApplicableWeight - configuredWeight;
 
         double effectWithoutFeature =
-            weight <= 0.00 || remainingWeight <= 0.00
+            configuredWeight <= 0.00 || remainingWeight <= 0.00
                 ? 0.00
                 : totalScore -
-                  ((totalScore * totalWeight - value * weight) /
+                  ((totalScore * totalApplicableWeight -
+                    value.Value * configuredWeight) /
                    remainingWeight);
 
         return new MissingImFeatureDiagnostic
         {
             Name = name,
-            Similarity = value,
-            Weight = weight,
+            IsApplicable = true,
+            Similarity = value.Value,
+            Weight = configuredWeight,
             WeightSharePercent = weightShare * 100.00,
             ContributionPercent = contribution * 100.00,
-            EffectOnScorePercentagePoints = effectWithoutFeature * 100.00
+            EffectOnScorePercentagePoints =
+                effectWithoutFeature * 100.00
         };
     }
 
@@ -394,7 +466,7 @@ public static class MissingImSimilarity
             : score / weight;
     }
 
-    private static double CompareLetterSegments(
+    private static double? CompareLetterSegments(
         MissingImCodeStructure left,
         MissingImCodeStructure right,
         double positionDecay) =>
@@ -405,7 +477,7 @@ public static class MissingImSimilarity
             positionDecay,
             (a, b) => TextSimilarity(a.Text, b.Text));
 
-    private static double CompareLetterPositions(
+    private static double? CompareLetterPositions(
         MissingImCodeStructure left,
         MissingImCodeStructure right,
         double positionDecay) =>
@@ -415,7 +487,7 @@ public static class MissingImSimilarity
             MissingImFragmentType.Letters,
             positionDecay);
 
-    private static double CompareNumericBlocks(
+    private static double? CompareNumericBlocks(
         MissingImCodeStructure left,
         MissingImCodeStructure right,
         double positionDecay) =>
@@ -426,7 +498,7 @@ public static class MissingImSimilarity
             positionDecay,
             (a, b) => TextSimilarity(a.Text, b.Text));
 
-    private static double CompareNumericPositions(
+    private static double? CompareNumericPositions(
         MissingImCodeStructure left,
         MissingImCodeStructure right,
         double positionDecay) =>
@@ -436,7 +508,7 @@ public static class MissingImSimilarity
             MissingImFragmentType.Digits,
             positionDecay);
 
-    private static double CompareTypedFragments(
+    private static double? CompareTypedFragments(
         MissingImCodeStructure left,
         MissingImCodeStructure right,
         MissingImFragmentType type,
@@ -462,14 +534,16 @@ public static class MissingImSimilarity
                     ? b[i]
                     : null;
 
-            // Если искомого типа блока нет с обеих сторон,
-            // эта позиция неприменима к характеристике.
+            // Отсутствие этого типа блока с обеих сторон —
+            // неприменимая позиция, а не совпадение.
             if (leftFragment == null && rightFragment == null)
                 continue;
 
-            double positionWeight = PositionWeight(i, positionDecay);
+            double positionWeight =
+                PositionWeight(i, positionDecay);
 
-            if (leftFragment != null && rightFragment != null)
+            if (leftFragment != null &&
+                rightFragment != null)
             {
                 score += compare(leftFragment, rightFragment) *
                          positionWeight;
@@ -478,14 +552,12 @@ public static class MissingImSimilarity
             weight += positionWeight;
         }
 
-        // Нет применимых блоков — характеристика нейтральна,
-        // а не считается совпавшей.
         return weight <= 0.00
-            ? 0.50
+            ? null
             : score / weight;
     }
 
-    private static double CompareTypedPositions(
+    private static double? CompareTypedPositions(
         MissingImCodeStructure left,
         MissingImCodeStructure right,
         MissingImFragmentType type,
@@ -508,12 +580,11 @@ public static class MissingImSimilarity
                 i < b.Count &&
                 b[i].Type == type;
 
-            // Отсутствие этого типа блока в обоих кодах
-            // не является совпадением.
             if (!leftHasType && !rightHasType)
                 continue;
 
-            double positionWeight = PositionWeight(i, positionDecay);
+            double positionWeight =
+                PositionWeight(i, positionDecay);
 
             if (leftHasType && rightHasType)
                 score += positionWeight;
@@ -522,7 +593,7 @@ public static class MissingImSimilarity
         }
 
         return weight <= 0.00
-            ? 0.50
+            ? null
             : score / weight;
     }
 

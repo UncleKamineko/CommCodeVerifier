@@ -7,6 +7,7 @@ public sealed class MissingImFeatureDiagnostic
 {
     public string Name { get; init; } = "";
 
+    public bool IsApplicable { get; init; } = true;
     /// <summary>Оценка характеристики от 0 до 1.</summary>
     public double Similarity { get; init; }
 
@@ -79,6 +80,12 @@ public sealed class MissingImPairDiagnostic
     public double SimilarityPercent { get; init; }
 
     public double MinimumSimilarityPercent { get; init; }
+
+    public string FirstCandidateNumericFragment { get; init; } = "";
+
+    public string FirstReferenceNumericFragment { get; init; } = "";
+
+    public bool FirstNumericFragmentDiffers { get; init; }
 
     public string PairDecision { get; set; } = "";
 

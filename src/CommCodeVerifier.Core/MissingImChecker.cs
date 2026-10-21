@@ -111,16 +111,19 @@ public static class MissingImChecker
             })
             .ToList();
 
+        var imConfiguration = ConfigRepository.Instance;
+
+        var imRuleMatches = structures.ToDictionary(
+            item => item,
+            item => (
+                Code: imConfiguration.ImRules.Check(item.CommercialCode),
+                Article: imConfiguration.ImArticleRules.Check(item.Article)));
+
         var itemsByFirstFragment = structures
-            .Where(item => !string.IsNullOrWhiteSpace(
-                item.Structure.FirstRequiredFragment))
-            .GroupBy(
-                item => item.Structure.FirstRequiredFragment!,
-                StringComparer.Ordinal)
-            .ToDictionary(
-                group => group.Key,
-                group => group.ToList(),
-                StringComparer.Ordinal);
+            .Where(item => !imRuleMatches[item].Code.IsMatch && !imRuleMatches[item].Article.IsMatch)
+            .Where(item => !string.IsNullOrWhiteSpace(item.Structure.FirstRequiredFragment))
+            .GroupBy(item => item.Structure.FirstRequiredFragment!, StringComparer.Ordinal)
+            .ToDictionary(group => group.Key, group => group.ToList(), StringComparer.Ordinal);
 
         var candidates = new List<MissingImCandidate>();
         var similarityDiagnostics =
@@ -129,6 +132,36 @@ public static class MissingImChecker
         foreach (var candidate in structures.Where(item => !item.HasIm))
         {
             cancellationToken.ThrowIfCancellationRequested();
+            var ruleMatches = imRuleMatches[candidate];
+            var codeRuleMatch = ruleMatches.Code;
+            var articleRuleMatch = ruleMatches.Article;
+
+            if (codeRuleMatch.IsMatch || articleRuleMatch.IsMatch)
+            {
+                if (settings.EnableSimilarityDiagnostics)
+                {
+                    var matchedRules = new List<string>();
+
+                    if (codeRuleMatch.IsMatch)
+                        matchedRules.Add(codeRuleMatch.Description);
+
+                    if (articleRuleMatch.IsMatch)
+                        matchedRules.Add(articleRuleMatch.Description);
+
+                    similarityDiagnostics.Add(
+                        new MissingImPairDiagnostic
+                        {
+                            CandidateArticle = candidate.Article,
+                            CandidateCode = candidate.CommercialCode,
+                            FirstCandidateNumericFragment = GetFirstNumericFragment(candidate.Structure),
+                            CandidateDecision =
+                                "Отклонён по правилам признака ИМ: " +
+                                string.Join("; ", matchedRules)
+                        });
+                }
+
+                continue;
+            }
 
             string? firstFragment =
                 candidate.Structure.FirstRequiredFragment;
@@ -232,10 +265,10 @@ public static class MissingImChecker
                     continue;
                 }
 
-                double articleSimilarity =
-                    MissingImSimilarity.CompareArticles(
-                        candidate.Article,
-                        reference.Article);
+                double articleSimilarity = MissingImSimilarity.CompareArticles(
+                       candidate.Article,
+                       reference.Article,
+                       settings.ArticlePositionDecay);
 
                 var similarity =
                     MissingImSimilarity.Compare(
@@ -274,8 +307,10 @@ public static class MissingImChecker
                                     settings.PositionDecay) * 100.00,
 
                             SimilarityPercent = similarity.ScorePercent,
-                            MinimumSimilarityPercent =
-                                settings.MinimumCodeSimilarity * 100.00,
+                            MinimumSimilarityPercent = settings.MinimumCodeSimilarity * 100.00,
+                            FirstCandidateNumericFragment = GetFirstNumericFragment(candidate.Structure),
+                            FirstReferenceNumericFragment = GetFirstNumericFragment(reference.Structure),
+                            FirstNumericFragmentDiffers = FirstNumericFragmentDiffers(candidate.Structure, reference.Structure),
 
                             PairDecision =
                                 similarity.Score >=
@@ -424,6 +459,28 @@ public static class MissingImChecker
         return report;
     }
 
+    private static string GetFirstNumericFragment(
+    MissingImCodeStructure structure) =>
+    structure.Fragments
+        .FirstOrDefault(fragment =>
+            fragment.Type == MissingImFragmentType.Digits)
+        ?.Text ?? "";
+
+    private static bool FirstNumericFragmentDiffers(
+        MissingImCodeStructure candidate,
+        MissingImCodeStructure reference)
+    {
+        string candidateFragment =
+            GetFirstNumericFragment(candidate);
+
+        string referenceFragment =
+            GetFirstNumericFragment(reference);
+
+        return candidateFragment.Length > 0 && referenceFragment.Length > 0 && !string.Equals(
+                   candidateFragment,
+                   referenceFragment,
+                   StringComparison.Ordinal);
+    }
     private static List<MissingImInputRow> ReadRows(
         string sourcePath,
         IProgress<int>? progress,

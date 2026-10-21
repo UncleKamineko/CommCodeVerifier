@@ -35,8 +35,15 @@ public sealed class MissingImSettings
     /// Коэффициент затухания вклада следующих блоков кода.
     /// Значение находится в диапазоне 0,00–1,00.
     /// </summary>
-    public double PositionDecay { get; set; } = 0.75;
+    public double PositionDecay { get; set; } =
+    MissingImSimilarity.DefaultPositionDecay;
 
+    /// <summary>
+    /// Коэффициент позиционного затухания при сравнении артикулов.
+    /// Значение находится в диапазоне 0,00–1,00.
+    /// </summary>
+    public double ArticlePositionDecay { get; set; } =
+        MissingImSimilarity.DefaultPositionDecay;
     /// <summary>
     /// Включает формирование листа с подробной диагностикой сходства.
     /// </summary>
@@ -78,6 +85,10 @@ public sealed class MissingImSettings
             1.00);
         PositionDecay = Clamp(
             PositionDecay,
+            0.00,
+            1.00);
+        ArticlePositionDecay = Clamp(
+            ArticlePositionDecay,
             0.00,
             1.00);
 
@@ -125,6 +136,7 @@ public sealed class MissingImSettings
             Weights = (Weights ?? new MissingImWeights()).Clone(),
             MinimumCodeSimilarity = MinimumCodeSimilarity,
             PositionDecay = PositionDecay,
+            ArticlePositionDecay = ArticlePositionDecay,
             EnableSimilarityDiagnostics = EnableSimilarityDiagnostics,
             LocalGroupThresholds = (LocalGroupThresholds ??
                 CreateDefaultLocalGroupThresholds())

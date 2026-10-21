@@ -242,6 +242,9 @@ public sealed partial class MissingImViewModel :
     private string _positionDecay = "0,75";
 
     [ObservableProperty]
+    private string _articlePositionDecay = "0,75";
+
+    [ObservableProperty]
     private bool _enableSimilarityDiagnostics = true;
 
     public bool HasError =>
@@ -433,7 +436,17 @@ public sealed partial class MissingImViewModel :
         out double positionDecay))
         {
             error =
-                "Некорректный коэффициент позиционного затухания: " +
+                "Некорректный коэффициент позиционного затухания кода: " +
+                "укажите значение от 0,00 до 1,00.";
+            return false;
+        }
+
+        if (!TryParseRatio(
+                ArticlePositionDecay,
+                out double articlePositionDecay))
+        {
+            error =
+                "Некорректный коэффициент позиционного затухания артикула: " +
                 "укажите значение от 0,00 до 1,00.";
             return false;
         }
@@ -447,6 +460,7 @@ public sealed partial class MissingImViewModel :
         _workingSettings.MinimumCodeSimilarity = codeSimilarity;
         _workingSettings.MinimumCodeSimilarity = codeSimilarity;
         _workingSettings.PositionDecay = positionDecay;
+        _workingSettings.ArticlePositionDecay = articlePositionDecay;
         _workingSettings.EnableSimilarityDiagnostics = EnableSimilarityDiagnostics;
 
         _workingSettings.Normalize();
@@ -470,17 +484,16 @@ public sealed partial class MissingImViewModel :
     private void LoadThresholdsFromSettings()
     {
         MinimumCodeSimilarity =
-            _workingSettings.MinimumCodeSimilarity.ToString(
-                "0.00",
-                CultureInfo.CurrentCulture);
+            _workingSettings.MinimumCodeSimilarity.ToString("0.00", CultureInfo.CurrentCulture);
+
         PositionDecay =
-            _workingSettings.PositionDecay.ToString(
-                "0.00",
-                 CultureInfo.CurrentCulture);
+            _workingSettings.PositionDecay.ToString("0.00", CultureInfo.CurrentCulture);
+
+        ArticlePositionDecay =
+            _workingSettings.ArticlePositionDecay.ToString("0.00", CultureInfo.CurrentCulture);
 
         EnableSimilarityDiagnostics =
-            _workingSettings.EnableSimilarityDiagnostics;
-        LocalGroupThresholds.Clear();
+            _workingSettings.EnableSimilarityDiagnostics; LocalGroupThresholds.Clear();
 
         int[] maxima = { 5, 20, 100, int.MaxValue };
         int[] minima = { 1, 6, 21, 101 };
