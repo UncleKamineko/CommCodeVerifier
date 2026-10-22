@@ -119,12 +119,10 @@ public sealed class MissingImTests
 
         Assert.NotNull(settings.MissingIm);
         Assert.NotNull(settings.MissingIm.Weights);
-        Assert.Equal(
-            0.80,
-            settings.MissingIm.MinimumCodeSimilarity);
+        Assert.Equal(0.30, settings.MissingIm.MinimumCodeSimilarity);
         Assert.Equal(0.75, settings.MissingIm.PositionDecay);
-        Assert.Equal(0.75, settings.MissingIm.ArticlePositionDecay);
-        Assert.Equal(0.35, settings.MissingIm.MinimumArticleSimilarityForLocalGroup);
+        Assert.Equal(0.30, settings.MissingIm.ArticlePositionDecay);
+        Assert.Equal(0.30, settings.MissingIm.MinimumArticleSimilarityForLocalGroup);
     }
     [Fact]
     public void LocalGroupRulesUseSpecifiedSizeBands()
@@ -135,8 +133,7 @@ public sealed class MissingImTests
             1,
             settings.GetThresholdForGroupSize(5)
                 .MinimumPositiveReferences);
-        Assert.Equal(
-            0.20,
+        Assert.Equal(0.20,
             settings.GetThresholdForGroupSize(5)
                 .MinimumPositiveRatio);
 
@@ -153,6 +150,15 @@ public sealed class MissingImTests
             3,
             settings.GetThresholdForGroupSize(21)
                 .MinimumPositiveReferences);
+        Assert.Equal(
+            0.60,
+            settings.GetThresholdForGroupSize(50)
+                .MinimumPositiveRatio);
+
+        Assert.Equal(
+            4,
+            settings.GetThresholdForGroupSize(51)
+        .MinimumPositiveReferences);
         Assert.Equal(
             0.75,
             settings.GetThresholdForGroupSize(100)
@@ -173,7 +179,7 @@ public sealed class MissingImTests
         var settings = new MissingImSettings
         {
             ArticlePositionDecay = 0.75,
-            MinimumArticleSimilarityForLocalGroup = 0.35
+            MinimumArticleSimilarityForLocalGroup = 0.3
         };
 
         bool differentProductsPass =

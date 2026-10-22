@@ -2,27 +2,17 @@ namespace CommCodeVerifier.Core;
 
 public sealed class MissingImWeights
 {
-    public double FragmentType { get; set; } = 1.00;
-
-    public double FragmentPosition { get; set; } = 1.00;
-
+    public double FragmentType { get; set; } = 0.10;
+    public double FragmentPosition { get; set; } = 0.25;
     public double LetterSegments { get; set; } = 1.00;
-
-    public double LetterPositions { get; set; } = 1.00;
-
-    public double NumericBlocks { get; set; } = 0.80;
-
-    public double NumericPositions { get; set; } = 0.80;
-
-    public double FragmentLengths { get; set; } = 0.70;
-
-    public double Separators { get; set; } = 0.40;
-
-    public double CodeLength { get; set; } = 0.60;
-
+    public double LetterPositions { get; set; } = 0.25;
+    public double NumericBlocks { get; set; } = 1.00;
+    public double NumericPositions { get; set; } = 0.25;
+    public double FragmentLengths { get; set; } = 0.80;
+    public double Separators { get; set; } = 0.20;
+    public double CodeLength { get; set; } = 0.10;
     public double ArticleSimilarity { get; set; } = 1.00;
-
-    public double ImPresenceInFamily { get; set; } = 1.00;
+    public double ImPresenceInFamily { get; set; } = 0.10;
 
     public MissingImWeights Clone() =>
         new()

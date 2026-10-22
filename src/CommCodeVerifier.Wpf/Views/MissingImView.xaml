@@ -77,11 +77,9 @@
             <Grid Grid.Row="5">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="360" />
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0"
-                            Margin="0,0,14,0">
+                <StackPanel Margin="0,0,14,0">
 
                     <ProgressBar Height="20"
                                  Minimum="0"
@@ -110,166 +108,12 @@
                                                     Converter={StaticResource BoolToVis},
                                                     ConverterParameter=Invert}" />
 
-                    <TextBlock Text="{Binding OutputFile}"
-                               TextWrapping="Wrap"
-                               Foreground="{DynamicResource Brush.Path.Custom}"
-                               Margin="0,8,0,0"
-                               Visibility="{Binding HasOutput,
-                                                    Converter={StaticResource BoolToVis}}" />
-                    <TextBlock Text="Файл результатов сформирован:"
-                               FontWeight="Bold"
-                               Margin="0,8,0,0"
-                               Visibility="{Binding HasOutput,
-                               Converter={StaticResource BoolToVis}}" />
-
-                    <TextBlock Text="{Binding OutputFile}"
-           TextWrapping="Wrap"
-           Foreground="{DynamicResource Brush.Path.Custom}"
-           Margin="0,2,0,0"
-           Visibility="{Binding HasOutput,
-                                Converter={StaticResource BoolToVis}}" />
+                    <TextBlock Text="Файл с результатами сформирован"
+                       Foreground="DarkGreen"
+                       FontWeight="Bold"
+                       Margin="0,8,0,0"
+                       Visibility="{Binding HasOutput, Converter={StaticResource BoolToVis}}" />
                 </StackPanel>
-
-                <GroupBox Grid.Column="1"
-                          Header="Настройки сходства"
-                          Padding="8">
-
-                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <StackPanel>
-
-                            <TextBlock Text="Веса характеристик"
-                                       FontWeight="Bold"
-                                       Margin="0,0,0,6" />
-
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="90" />
-                                </Grid.ColumnDefinitions>
-
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                </Grid.RowDefinitions>
-
-                                <ItemsControl Grid.Row="0"
-                                              Grid.ColumnSpan="2"
-                                              ItemsSource="{Binding Weights}">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Grid Margin="0,2">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="90" />
-                                                </Grid.ColumnDefinitions>
-
-                                                <TextBlock Text="{Binding Title}"
-                                                           VerticalAlignment="Center"
-                                                           TextWrapping="Wrap"
-                                                           Margin="0,0,6,0" />
-
-                                                <TextBox Grid.Column="1"
-                                                         Text="{Binding Value,
-                                                                UpdateSourceTrigger=PropertyChanged}"
-                                                         HorizontalContentAlignment="Right" />
-                                            </Grid>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </Grid>
-
-                            <Separator Margin="0,8" />
-
-                            <TextBlock Text="Минимальное сходство кода"
-                                       Margin="0,2" />
-
-                            <TextBox Text="{Binding MinimumCodeSimilarity, UpdateSourceTrigger=PropertyChanged}"
-                                     Margin="0,0,0,4" />
-                            
-                            <TextBlock Text="Минимальное сходство артикулов для локальной группы (0,00–1,00)"
-                                       Margin="0,2" />
-
-                            <TextBox Text="{Binding MinimumArticleSimilarityForLocalGroup, UpdateSourceTrigger=PropertyChanged}"
-                                     Margin="0,0,0,4" />
-                            
-                            <TextBlock Text="Позиционное затухание коммерческого кода (0,00–1,00)"
-                                       Margin="0,2" />
-
-                            <TextBox Text="{Binding PositionDecay, UpdateSourceTrigger=PropertyChanged}"
-                                     Margin="0,0,0,4" />
-
-                            <TextBlock Text="Позиционное затухание артикула (0,00–1,00)"
-                                       Margin="0,2" />
-
-                            <TextBox Text="{Binding ArticlePositionDecay, UpdateSourceTrigger=PropertyChanged}"
-                                     Margin="0,0,0,4" />
-                            
-                            <CheckBox Content="Формировать отладочный лист сходства"
-                                      IsChecked="{Binding EnableSimilarityDiagnostics, UpdateSourceTrigger=PropertyChanged}"
-                                      Margin="0,2,0,8" />
-                            
-                            <TextBlock Text="Минимальная доля кодов с признаком"
-                                       Margin="0,2" />
-
-                            <TextBlock Text="Пороги для локальной группы кандидата"
-                                       Margin="0,8,0,4"
-                                       FontWeight="Bold" />
-
-                            <DataGrid ItemsSource="{Binding LocalGroupThresholds}"
-                                      AutoGenerateColumns="False"
-                                      CanUserAddRows="False"
-                                      CanUserDeleteRows="False"
-                                      CanUserResizeRows="False"
-                                      HeadersVisibility="Column"
-                                      IsReadOnly="False"
-                                      MinHeight="150"
-                                      Margin="0,0,0,8">
-                                <DataGrid.Columns>
-                                    <DataGridTextColumn
-                                    Header="Размер локальной группы с кандидатом"
-                                    Binding="{Binding GroupSizeRange}"
-                                    IsReadOnly="True"
-                                    Width="*" />
-
-                                    <DataGridTextColumn
-                            Header="Минимум положительных референсов"
-                                   Binding="{Binding MinimumPositiveReferences,
-                                   UpdateSourceTrigger=PropertyChanged}"
-                                   Width="*" />
-
-                                    <DataGridTextColumn
-                            Header="Минимальная доля положительных"
-                                   Binding="{Binding MinimumPositiveRatio,
-                                   UpdateSourceTrigger=PropertyChanged}"
-                                   Width="*" />
-                                </DataGrid.Columns>
-                            </DataGrid>
-                            
-                            <TextBox Text="{Binding MinimumPositiveReferences,
-                                                    UpdateSourceTrigger=PropertyChanged}"
-                                     Margin="0,0,0,8" />
-
-                            <WrapPanel>
-                                <Button Content="Сохранить настройки"
-                                        Command="{Binding SaveSettingsCommand}"
-                                        Margin="0,0,6,4" />
-
-                                <Button Content="Восстановить значения по умолчанию"
-                                        Command="{Binding RestoreDefaultsCommand}"
-                                        Margin="0,0,6,4" />
-                            </WrapPanel>
-                        </StackPanel>
-                    </ScrollViewer>
-                </GroupBox>
             </Grid>
         </Grid>
     </ScrollViewer>

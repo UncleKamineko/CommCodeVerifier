@@ -50,18 +50,12 @@ public static class MissingImReportWriter
         }
         using var workbook = new XLWorkbook();
 
-        WriteCandidatesSheet(
-            workbook,
-            candidates);
+        WriteCandidatesSheet(workbook, candidates);
 
-        WriteDetailsSheet(
-            workbook,
-            candidates);
         if (diagnostics != null)
         {
-            WriteSimilarityDiagnosticsSheet(
-                workbook,
-                diagnostics);
+            WriteDetailsSheet(workbook, candidates);
+            WriteSimilarityDiagnosticsSheet(workbook, diagnostics);
         }
 
         workbook.SaveAs(path);

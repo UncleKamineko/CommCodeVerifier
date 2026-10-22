@@ -20,7 +20,8 @@ public enum TabId
     BatchProcessing,
     AnalysisSettings,
     ImCheck,
-    MissingIm
+    MissingIm,
+    ImAnalysisSettings
 }
 
 /// <summary>

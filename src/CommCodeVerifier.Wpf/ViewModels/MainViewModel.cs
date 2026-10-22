@@ -45,6 +45,8 @@ public sealed partial class MainViewModel : ObservableObject
 
     public MissingImViewModel MissingIm { get; }
 
+    public ImAnalysisSettingsViewModel ImAnalysisSettings { get; }
+
     public ObservableCollection<NavigationSection> Sections { get; } = new();
 
     /// <summary>
@@ -105,7 +107,7 @@ public sealed partial class MainViewModel : ObservableObject
         AnalysisSettings = new AnalysisSettingsViewModel(services, Processing);
         ImCheck = new ImCheckViewModel(services, Processing, ReloadConfiguration);
         MissingIm = new MissingImViewModel(services, Processing);
-
+        ImAnalysisSettings = new ImAnalysisSettingsViewModel(MissingIm, ImCheck);
         BuildNavigation();
 
         ValidateNavigation();
@@ -171,6 +173,11 @@ public sealed partial class MainViewModel : ObservableObject
             SectionId.InternetShop,
             "Отсутствующий ИМ",
             MissingIm);
+        var imAnalysisSettings = new NavigationTab(
+            TabId.ImAnalysisSettings,
+            SectionId.InternetShop,
+            "Настройки анализа для ИМ",
+            ImAnalysisSettings);
 
         var commercialCode = new NavigationSection(
             SectionId.CommercialCode,
@@ -189,7 +196,8 @@ public sealed partial class MainViewModel : ObservableObject
             new[]
             {
             imCheck,
-            missingIm
+            missingIm,
+            imAnalysisSettings
             },
             "SectionInternetShopText");
 

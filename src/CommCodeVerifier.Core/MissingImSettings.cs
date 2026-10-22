@@ -29,12 +29,12 @@ public sealed class MissingImSettings
     /// Минимальное сходство кандидата и референс-кода.
     /// Значение хранится в диапазоне от 0,00 до 1,00.
     /// </summary>
-    public double MinimumCodeSimilarity { get; set; } = 0.80;
+    public double MinimumCodeSimilarity { get; set; } = 0.30;
     /// <summary>
     /// Минимальное сходство артикулов для включения соседа
     /// в локальную группу. Значение — от 0,00 до 1,00.
     /// </summary>
-    public double MinimumArticleSimilarityForLocalGroup { get; set; } = 0.35;
+    public double MinimumArticleSimilarityForLocalGroup { get; set; } = 0.30;
     /// <summary>
     /// Коэффициент затухания вклада следующих блоков кода.
     /// Значение находится в диапазоне 0,00–1,00.
@@ -46,12 +46,11 @@ public sealed class MissingImSettings
     /// Коэффициент позиционного затухания при сравнении артикулов.
     /// Значение находится в диапазоне 0,00–1,00.
     /// </summary>
-    public double ArticlePositionDecay { get; set; } =
-        MissingImSimilarity.DefaultPositionDecay;
+    public double ArticlePositionDecay { get; set; } = 0.30;
     /// <summary>
     /// Включает формирование листа с подробной диагностикой сходства.
     /// </summary>
-    public bool EnableSimilarityDiagnostics { get; set; } = true;
+    public bool EnableSimilarityDiagnostics { get; set; } = false;
     /// <summary>
     /// Пороги отбора для локальной группы, включающей проверяемого кандидата.
     /// </summary>
@@ -102,14 +101,14 @@ public sealed class MissingImSettings
 
         // Диапазоны фиксированы; настраиваются минимальное число референсов
         // и минимальная доля положительных записей.
-        int[] maximumSizes = { 5, 20, 100, int.MaxValue };
+        int[] maximumSizes = { 5, 20, 50,100, int.MaxValue };
         var defaults = CreateDefaultLocalGroupThresholds();
 
         LocalGroupThresholds ??=
             new List<MissingImLocalGroupThreshold>();
 
         var normalized =
-            new List<MissingImLocalGroupThreshold>(4);
+            new List<MissingImLocalGroupThreshold>(maximumSizes.Length);
 
         for (int i = 0; i < maximumSizes.Length; i++)
         {
@@ -171,8 +170,14 @@ public sealed class MissingImSettings
         },
         new()
         {
-            MaximumGroupSize = 100,
+            MaximumGroupSize = 50,
             MinimumPositiveReferences = 3,
+            MinimumPositiveRatio = 0.60
+        },
+        new()
+        {
+            MaximumGroupSize = 100,
+            MinimumPositiveReferences = 4,
             MinimumPositiveRatio = 0.75
         },
         new()

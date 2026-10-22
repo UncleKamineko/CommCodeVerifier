@@ -1,0 +1,199 @@
+<UserControl x:Class="CommCodeVerifier.Wpf.Views.ImAnalysisSettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:CommCodeVerifier.Wpf.ViewModels">
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="14">
+            <TextBlock Style="{StaticResource HeaderText}"
+                       Text="Настройки анализа для ИМ"
+                       Margin="0,4,0,10" />
+
+            <GroupBox Header="Настройки сходства"
+                      Padding="12"
+                      Margin="0,0,0,10"
+                      BorderBrush="#FF000102"
+                      BorderThickness="3">
+                <StackPanel DataContext="{Binding MissingIm}">
+                    <TextBlock Text="Веса характеристик"
+                               FontWeight="Bold"
+                               Margin="0,0,0,6" />
+
+                    <ItemsControl ItemsSource="{Binding Weights}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="90" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{Binding Title}"
+                                               VerticalAlignment="Center"
+                                               TextWrapping="Wrap"
+                                               Margin="0,0,8,0" />
+                                    <TextBox Grid.Column="1"
+                                             Text="{Binding Value, UpdateSourceTrigger=PropertyChanged}"
+                                             HorizontalContentAlignment="Right" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <Separator Margin="0,8" />
+
+                    <TextBlock Text="Минимальное сходство кода (0,00–1,00)"
+                               Margin="0,2" />
+                    <TextBox Text="{Binding MinimumCodeSimilarity, UpdateSourceTrigger=PropertyChanged}"
+                             Margin="0,0,0,4" />
+
+                    <TextBlock Text="Минимальное сходство артикулов для локальной группы (0,00–1,00)"
+                               Margin="0,2" />
+                    <TextBox Text="{Binding MinimumArticleSimilarityForLocalGroup, UpdateSourceTrigger=PropertyChanged}"
+                             Margin="0,0,0,4" />
+
+                    <TextBlock Text="Позиционное затухание коммерческого кода (0,00–1,00)"
+                               Margin="0,2" />
+                    <TextBox Text="{Binding PositionDecay, UpdateSourceTrigger=PropertyChanged}"
+                             Margin="0,0,0,4" />
+
+                    <TextBlock Text="Позиционное затухание артикула (0,00–1,00)"
+                               Margin="0,2" />
+                    <TextBox Text="{Binding ArticlePositionDecay, UpdateSourceTrigger=PropertyChanged}"
+                             Margin="0,0,0,4" />
+
+                    <CheckBox Content="Формировать отладочный лист сходства"
+                              IsChecked="{Binding EnableSimilarityDiagnostics, UpdateSourceTrigger=PropertyChanged}"
+                              Margin="0,4,0,8" />
+
+                    <TextBlock Text="Пороги локальной группы кандидата"
+                               FontWeight="Bold"
+                               Margin="0,4,0,4" />
+                    <DataGrid ItemsSource="{Binding LocalGroupThresholds}"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
+                              CanUserResizeRows="False"
+                              HeadersVisibility="Column"
+                              IsReadOnly="False"
+                              MinHeight="150"
+                              Margin="0,0,0,8">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Размер локальной группы с кандидатом"
+                                                Binding="{Binding GroupSizeRange}"
+                                                IsReadOnly="True"
+                                                Width="*" />
+                            <DataGridTextColumn Header="Минимум положительных референсов"
+                                                Binding="{Binding MinimumPositiveReferences, UpdateSourceTrigger=PropertyChanged}"
+                                                Width="*" />
+                            <DataGridTextColumn Header="Минимальная доля положительных"
+                                                Binding="{Binding MinimumPositiveRatio, UpdateSourceTrigger=PropertyChanged}"
+                                                Width="*" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+                    <TextBlock Text="{Binding SettingsError}"
+                               Foreground="Red"
+                               TextWrapping="Wrap"
+                               Margin="0,2,0,6"
+                               Visibility="{Binding HasSettingsError, Converter={StaticResource BoolToVis}}" />
+                    <TextBlock Text="{Binding SettingsStatus}"
+                               Foreground="DarkGreen"
+                               FontWeight="Bold"
+                               Margin="0,2,0,6"
+                               Visibility="{Binding HasSettingsStatus, Converter={StaticResource BoolToVis}}" />
+
+                    <WrapPanel>
+                        <Button Content="Сохранить настройки"
+                                Command="{Binding SaveSettingsCommand}"
+                                Margin="0,0,8,4" Background="{DynamicResource Brush.Button.Accent}" FontWeight="Bold" />
+                        <Button Content="Восстановить значения по умолчанию"
+                                Command="{Binding RestoreDefaultsCommand}"
+                                Margin="0,0,8,4" />
+                    </WrapPanel>
+                </StackPanel>
+            </GroupBox>
+
+            <GroupBox Padding="12,8,12,12"
+                      Margin="0,0,0,10"
+                      BorderBrush="Black"
+                      BorderThickness="3">
+                <GroupBox.Header>
+                    <TextBlock Text="Файлы правил проверки для ИМ"
+                               FontWeight="Bold" />
+                </GroupBox.Header>
+                <StackPanel DataContext="{Binding ImCheck}">
+                    <TextBlock TextWrapping="Wrap"
+                               MaxWidth="680"
+                               HorizontalAlignment="Left"
+                               Margin="0,0,0,8"
+                               Text="Если вы хотите использовать файлы, отличные от файлов по умолчанию, выберите их расположение ниже." />
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.Resources>
+                            <Style x:Key="RulesPathText" TargetType="TextBlock">
+                                <Setter Property="Margin" Value="8,0,0,4" />
+                                <Setter Property="VerticalAlignment" Value="Center" />
+                                <Setter Property="TextWrapping" Value="Wrap" />
+                                <Setter Property="Foreground" Value="{DynamicResource Brush.Hint}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding State}" Value="{x:Static vm:ImRulesFileState.Ok}">
+                                        <Setter Property="Foreground" Value="{DynamicResource Brush.Path.Custom}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding State}" Value="{x:Static vm:ImRulesFileState.Missing}">
+                                        <Setter Property="Foreground" Value="Red" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding State}" Value="{x:Static vm:ImRulesFileState.NoRules}">
+                                        <Setter Property="Foreground" Value="Red" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Grid.Resources>
+
+                        <Button Grid.Row="0"
+                                Grid.Column="0"
+                                Content="Файл «Правила проверки комм. кода для ИМ»"
+                                HorizontalAlignment="Stretch"
+                                Margin="0,0,0,4"
+                                Command="{Binding PickRulesFileCommand}"
+                                CommandParameter="{Binding CodeRules}" />
+                        <TextBlock Grid.Row="0"
+                                   Grid.Column="1"
+                                   DataContext="{Binding CodeRules}"
+                                   Style="{StaticResource RulesPathText}"
+                                   Text="{Binding DisplayText}" />
+
+                        <Button Grid.Row="1"
+                                Grid.Column="0"
+                                Content="Файл «Правила проверки артикула для ИМ»"
+                                HorizontalAlignment="Stretch"
+                                Margin="0,0,0,4"
+                                Command="{Binding PickRulesFileCommand}"
+                                CommandParameter="{Binding ArticleRules}" />
+                        <TextBlock Grid.Row="1"
+                                   Grid.Column="1"
+                                   DataContext="{Binding ArticleRules}"
+                                   Style="{StaticResource RulesPathText}"
+                                   Text="{Binding DisplayText}" />
+                    </Grid>
+
+                    <WrapPanel Margin="0,6,0,0">
+                        <Button Content="Вернуть файлы по умолчанию"
+                                Command="{Binding ResetRulesFilesCommand}"
+                                Margin="0,0,8,4" />
+                        <Button Content="Открыть папку конфигураций"
+                                Command="{Binding OpenConfigFolderCommand}"
+                                Margin="0,0,8,4" />
+                    </WrapPanel>
+                </StackPanel>
+            </GroupBox>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

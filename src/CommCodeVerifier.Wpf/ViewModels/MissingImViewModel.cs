@@ -21,9 +21,7 @@ public sealed partial class MissingImWeightItem :
         _getter = getter;
         _setter = setter;
         _weights = weights;
-        Value = getter(weights).ToString(
-            "0.00",
-            CultureInfo.CurrentCulture);
+        Value = getter(weights).ToString("0.00", CultureInfo.CurrentCulture);
     }
 
     private readonly Func<MissingImWeights, double> _getter;
@@ -222,6 +220,14 @@ public sealed partial class MissingImViewModel :
     private string? _error;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasSettingsError))]
+    private string? _settingsError;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasSettingsStatus))]
+    private string _settingsStatus = "";
+
+    [ObservableProperty]
     private string? _outputFolder;
 
     [NotifyPropertyChangedFor(nameof(HasOutput))]
@@ -236,22 +242,28 @@ public sealed partial class MissingImViewModel :
     private int _candidateCount;
 
     [ObservableProperty]
-    private string _minimumCodeSimilarity = "0,80";
+    private string _minimumCodeSimilarity = "0,30";
 
     [ObservableProperty]
-    private string _minimumArticleSimilarityForLocalGroup = "0,35";
+    private string _minimumArticleSimilarityForLocalGroup = "0,30";
 
     [ObservableProperty]
     private string _positionDecay = "0,75";
 
     [ObservableProperty]
-    private string _articlePositionDecay = "0,75";
+    private string _articlePositionDecay = "0,30";
 
     [ObservableProperty]
-    private bool _enableSimilarityDiagnostics = true;
+    private bool _enableSimilarityDiagnostics = false;
 
     public bool HasError =>
         !string.IsNullOrWhiteSpace(Error);
+
+    public bool HasSettingsError =>
+    !string.IsNullOrWhiteSpace(SettingsError);
+
+    public bool HasSettingsStatus =>
+        !string.IsNullOrWhiteSpace(SettingsStatus);
 
     public bool HasOutput =>
         !string.IsNullOrWhiteSpace(OutputFile) &&
@@ -310,17 +322,26 @@ public sealed partial class MissingImViewModel :
     [RelayCommand]
     private void SaveSettings()
     {
+        SettingsError = null;
+        SettingsStatus = "";
         if (!TryApplySettings(out string error))
         {
-            Error = error;
+            SettingsError = error;
             return;
         }
 
-        _services.Settings.Processing.MissingIm = _workingSettings.Clone();
+        try
+        {
+            _services.Settings.Processing.MissingIm = _workingSettings.Clone();
         _services.Settings.SaveProcessing();
+            SettingsStatus = "Настройки сохранены";
+        }
+        catch (Exception ex)
+        {
+            SettingsError =
+                "Не удалось сохранить настройки: " + ex.Message;
+        }
 
-        Error = null;
-        Status = "Настройки сохранены";
     }
 
     [RelayCommand]
@@ -339,9 +360,10 @@ public sealed partial class MissingImViewModel :
 
     private async Task RunAsync(string sourcePath)
     {
+        SettingsError = null;
         if (!TryApplySettings(out string error))
         {
-            Error = error;
+            SettingsError = error;
             return;
         }
 
@@ -510,14 +532,14 @@ public sealed partial class MissingImViewModel :
         EnableSimilarityDiagnostics =
             _workingSettings.EnableSimilarityDiagnostics; LocalGroupThresholds.Clear();
 
-        int[] maxima = { 5, 20, 100, int.MaxValue };
-        int[] minima = { 1, 6, 21, 101 };
+        int[] maxima = { 5, 20, 50,100, int.MaxValue };
+        int[] minima = { 1, 6, 21, 51, 101 };
 
         for (int i = 0;
              i < _workingSettings.LocalGroupThresholds.Count;
              i++)
         {
-            string range = i == 3
+            string range = i == 4
                 ? ">100"
                 : $"{minima[i]}–{maxima[i]}";
 
