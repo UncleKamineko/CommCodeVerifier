@@ -253,7 +253,9 @@ public static class MissingImReportWriter
         "Сходство блоков, %",
         "Позиционный коэффициент",
         "Первый числовой фрагмент кандидата",
-        "Первый числовой фрагмент референса"
+        "Первый числовой фрагмент референса",
+        "Сходство артикулов, %",
+        "Порог сходства артикулов, %"
     };
 
         for (int column = 0; column < headers.Length; column++)
@@ -334,6 +336,10 @@ public static class MissingImReportWriter
                     diagnostic.FirstCandidateNumericFragment;
                 worksheet.Cell(row, 30).Value =
                     diagnostic.FirstReferenceNumericFragment;
+                worksheet.Cell(row, 31).Value =
+                    diagnostic.ArticleSimilarityPercent;
+                worksheet.Cell(row, 32).Value =
+                    diagnostic.MinimumArticleSimilarityPercent;
 
                 if (diagnostic.FirstNumericFragmentDiffers)
                 {
@@ -359,10 +365,12 @@ public static class MissingImReportWriter
         worksheet.Column(16).Width = 42;
         worksheet.Column(23).Width = 22;
         worksheet.Column(24).Width = 22;
+        worksheet.Column(31).Width = 24;
+        worksheet.Column(32).Width = 28;
 
         foreach (int column in new[]
                  {
-                 9, 10, 11, 12, 13, 17, 19, 20, 21, 27
+                 9, 10, 11, 12, 13, 17, 19, 20, 21, 27, 31, 32
              })
         {
             worksheet.Column(column)
@@ -421,7 +429,7 @@ public static class MissingImReportWriter
 
         if (diagnostic.FirstNumericFragmentDiffers)
         {
-            worksheet.Range(row, 1, row, 30)
+            worksheet.Range(row, 1, row, 32)
                 .Style.Fill.BackgroundColor = XLColor.Yellow;
         }
     }

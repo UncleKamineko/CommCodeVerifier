@@ -239,6 +239,9 @@ public sealed partial class MissingImViewModel :
     private string _minimumCodeSimilarity = "0,80";
 
     [ObservableProperty]
+    private string _minimumArticleSimilarityForLocalGroup = "0,35";
+
+    [ObservableProperty]
     private string _positionDecay = "0,75";
 
     [ObservableProperty]
@@ -432,6 +435,16 @@ public sealed partial class MissingImViewModel :
         }
 
         if (!TryParseRatio(
+        MinimumArticleSimilarityForLocalGroup,
+        out double minimumArticleSimilarityForLocalGroup))
+        {
+            error =
+                "Некорректный минимальный порог сходства артикулов: " +
+                "укажите значение от 0,00 до 1,00.";
+            return false;
+        }
+
+        if (!TryParseRatio(
         PositionDecay,
         out double positionDecay))
         {
@@ -458,7 +471,7 @@ public sealed partial class MissingImViewModel :
         }
 
         _workingSettings.MinimumCodeSimilarity = codeSimilarity;
-        _workingSettings.MinimumCodeSimilarity = codeSimilarity;
+        _workingSettings.MinimumArticleSimilarityForLocalGroup = minimumArticleSimilarityForLocalGroup;
         _workingSettings.PositionDecay = positionDecay;
         _workingSettings.ArticlePositionDecay = articlePositionDecay;
         _workingSettings.EnableSimilarityDiagnostics = EnableSimilarityDiagnostics;
@@ -486,6 +499,8 @@ public sealed partial class MissingImViewModel :
         MinimumCodeSimilarity =
             _workingSettings.MinimumCodeSimilarity.ToString("0.00", CultureInfo.CurrentCulture);
 
+        MinimumArticleSimilarityForLocalGroup =
+            _workingSettings.MinimumArticleSimilarityForLocalGroup.ToString("0.00", CultureInfo.CurrentCulture);
         PositionDecay =
             _workingSettings.PositionDecay.ToString("0.00", CultureInfo.CurrentCulture);
 

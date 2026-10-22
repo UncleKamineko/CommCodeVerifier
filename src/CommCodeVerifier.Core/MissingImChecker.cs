@@ -189,19 +189,47 @@ public static class MissingImChecker
 
             var rankedNeighbors =
                 new List<(MissingImFamilyItem Item, double Score)>();
-
+                bool hadArticleRejections = false;
             foreach (var item in prefixItems)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
                 if (ReferenceEquals(item, candidate))
                     continue;
+                if (!PassesArticleSimilarityThreshold(
+        candidate.Article,
+        item.Article,
+        settings,
+        out double articleSimilarity))
+                {
+                    hadArticleRejections = true;
 
-                double blockSimilarity =
-                    MissingImSimilarity.CompareCodeBlocks(
-                        candidate.Structure,
-                        item.Structure,
-                        settings.PositionDecay);
+                    if (settings.EnableSimilarityDiagnostics)
+                    {
+                        similarityDiagnostics.Add(
+                            new MissingImPairDiagnostic
+                            {
+                                CandidateArticle = candidate.Article,
+                                CandidateCode = candidate.CommercialCode,
+                                ReferenceArticle = item.Article,
+                                ReferenceCode = item.CommercialCode,
+                                ArticleSimilarityPercent =
+                                    articleSimilarity * 100.00,
+                                MinimumArticleSimilarityPercent =
+                                    settings.MinimumArticleSimilarityForLocalGroup *
+                                    100.00,
+                                PairDecision =
+                                    $"Исключён из локальной группы: сходство " +
+                                    $"артикулов {articleSimilarity:P2} ниже " +
+                                    $"порога " +
+                                    $"{settings.MinimumArticleSimilarityForLocalGroup:P2}."
+                            });
+                    }
+
+                    continue;
+                }
+                double blockSimilarity = MissingImSimilarity.CompareCodeBlocks
+                    (candidate.Structure, item.Structure, settings.PositionDecay);
 
                 rankedNeighbors.Add((item, blockSimilarity));
             }
@@ -308,6 +336,11 @@ public static class MissingImChecker
 
                             SimilarityPercent = similarity.ScorePercent,
                             MinimumSimilarityPercent = settings.MinimumCodeSimilarity * 100.00,
+                            ArticleSimilarityPercent = MissingImSimilarity.CompareArticles(
+                                    candidate.Article,
+                                    reference.Article,
+                                    settings.ArticlePositionDecay) * 100.00,
+                            MinimumArticleSimilarityPercent = settings.MinimumArticleSimilarityForLocalGroup * 100.00,
                             FirstCandidateNumericFragment = GetFirstNumericFragment(candidate.Structure),
                             FirstReferenceNumericFragment = GetFirstNumericFragment(reference.Structure),
                             FirstNumericFragmentDiffers = FirstNumericFragmentDiffers(candidate.Structure, reference.Structure),
@@ -387,7 +420,7 @@ public static class MissingImChecker
 
             if (settings.EnableSimilarityDiagnostics)
             {
-                if (candidatePairDiagnostics.Count == 0)
+                if (candidatePairDiagnostics.Count == 0 && !hadArticleRejections)
                 {
                     similarityDiagnostics.Add(
                         new MissingImPairDiagnostic
@@ -459,6 +492,20 @@ public static class MissingImChecker
         return report;
     }
 
+    internal static bool PassesArticleSimilarityThreshold(
+    string candidateArticle,
+    string neighborArticle,
+    MissingImSettings settings,
+    out double similarity)
+    {
+        similarity = MissingImSimilarity.CompareArticles(
+            candidateArticle,
+            neighborArticle,
+            settings.ArticlePositionDecay);
+
+        return similarity >=
+               settings.MinimumArticleSimilarityForLocalGroup;
+    }
     private static string GetFirstNumericFragment(
     MissingImCodeStructure structure) =>
     structure.Fragments

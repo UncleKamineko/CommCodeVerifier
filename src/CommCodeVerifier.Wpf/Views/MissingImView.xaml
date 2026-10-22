@@ -194,7 +194,13 @@
 
                             <TextBox Text="{Binding MinimumCodeSimilarity, UpdateSourceTrigger=PropertyChanged}"
                                      Margin="0,0,0,4" />
+                            
+                            <TextBlock Text="Минимальное сходство артикулов для локальной группы (0,00–1,00)"
+                                       Margin="0,2" />
 
+                            <TextBox Text="{Binding MinimumArticleSimilarityForLocalGroup, UpdateSourceTrigger=PropertyChanged}"
+                                     Margin="0,0,0,4" />
+                            
                             <TextBlock Text="Позиционное затухание коммерческого кода (0,00–1,00)"
                                        Margin="0,2" />
 

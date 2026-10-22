@@ -30,7 +30,11 @@ public sealed class MissingImSettings
     /// Значение хранится в диапазоне от 0,00 до 1,00.
     /// </summary>
     public double MinimumCodeSimilarity { get; set; } = 0.80;
-
+    /// <summary>
+    /// Минимальное сходство артикулов для включения соседа
+    /// в локальную группу. Значение — от 0,00 до 1,00.
+    /// </summary>
+    public double MinimumArticleSimilarityForLocalGroup { get; set; } = 0.35;
     /// <summary>
     /// Коэффициент затухания вклада следующих блоков кода.
     /// Значение находится в диапазоне 0,00–1,00.
@@ -81,6 +85,10 @@ public sealed class MissingImSettings
 
         MinimumCodeSimilarity = Clamp(
             MinimumCodeSimilarity,
+            0.00,
+            1.00);
+        MinimumArticleSimilarityForLocalGroup = Clamp(
+            MinimumArticleSimilarityForLocalGroup,
             0.00,
             1.00);
         PositionDecay = Clamp(
@@ -135,6 +143,7 @@ public sealed class MissingImSettings
         {
             Weights = (Weights ?? new MissingImWeights()).Clone(),
             MinimumCodeSimilarity = MinimumCodeSimilarity,
+            MinimumArticleSimilarityForLocalGroup = MinimumArticleSimilarityForLocalGroup,
             PositionDecay = PositionDecay,
             ArticlePositionDecay = ArticlePositionDecay,
             EnableSimilarityDiagnostics = EnableSimilarityDiagnostics,

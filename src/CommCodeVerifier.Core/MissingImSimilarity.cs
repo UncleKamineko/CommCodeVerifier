@@ -256,10 +256,26 @@ public static class MissingImSimilarity
                 i < right.Count &&
                 left[i].Type == right[i].Type)
             {
-                score += TextSimilarity(
-                             left[i].Text,
-                             right[i].Text) *
-                         positionWeight;
+                double fragmentSimilarity;
+
+                if (i == 0 &&
+                    left[i].Type == MissingImFragmentType.Digits)
+                {
+                    fragmentSimilarity = string.Equals(
+                        left[i].Text,
+                        right[i].Text,
+                        StringComparison.Ordinal)
+                            ? 1.00
+                            : 0.00;
+                }
+                else
+                {
+                    fragmentSimilarity = TextSimilarity(
+                        left[i].Text,
+                        right[i].Text);
+                }
+
+                score += fragmentSimilarity * positionWeight;
             }
 
             weight += positionWeight;
@@ -274,7 +290,13 @@ public static class MissingImSimilarity
     {
         var fragments = MissingImCodeParser
             .Parse(article, article)
-            .Fragments;
+            .Fragments
+            // Дефисы не являются сравниваемыми блоками
+            // и не занимают позицию в последовательности.
+            .Where(fragment =>
+                fragment.Type != MissingImFragmentType.Separator ||
+                fragment.Text.Any(character => character != '-'))
+            .ToList();
 
         int firstNumericIndex = -1;
 
@@ -287,8 +309,8 @@ public static class MissingImSimilarity
             break;
         }
 
-        // Если число найдено, сравнение начинается с него.
-        // Если числовых фрагментов нет, сравниваем с начала артикула.
+        // Если найдено число, сравнение начинается с него.
+        // Если чисел нет — с первого оставшегося фрагмента артикула.
         return firstNumericIndex >= 0
             ? fragments.Skip(firstNumericIndex).ToList()
             : fragments;

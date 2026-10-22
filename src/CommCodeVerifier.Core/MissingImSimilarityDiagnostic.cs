@@ -81,6 +81,10 @@ public sealed class MissingImPairDiagnostic
 
     public double MinimumSimilarityPercent { get; init; }
 
+    public double ArticleSimilarityPercent { get; init; }
+
+    public double MinimumArticleSimilarityPercent { get; init; }
+
     public string FirstCandidateNumericFragment { get; init; } = "";
 
     public string FirstReferenceNumericFragment { get; init; } = "";

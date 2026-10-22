@@ -124,6 +124,7 @@ public sealed class MissingImTests
             settings.MissingIm.MinimumCodeSimilarity);
         Assert.Equal(0.75, settings.MissingIm.PositionDecay);
         Assert.Equal(0.75, settings.MissingIm.ArticlePositionDecay);
+        Assert.Equal(0.35, settings.MissingIm.MinimumArticleSimilarityForLocalGroup);
     }
     [Fact]
     public void LocalGroupRulesUseSpecifiedSizeBands()
@@ -166,5 +167,90 @@ public sealed class MissingImTests
             settings.GetThresholdForGroupSize(101)
                 .MinimumPositiveRatio);
     }
-    
+    [Fact]
+    public void ArticleSimilarityThresholdRejectsDifferentProductsAndAllowsManualCodeErrors()
+    {
+        var settings = new MissingImSettings
+        {
+            ArticlePositionDecay = 0.75,
+            MinimumArticleSimilarityForLocalGroup = 0.35
+        };
+
+        bool differentProductsPass =
+            MissingImChecker.PassesArticleSimilarityThreshold(
+                "SRF20-3V10-0001",
+                "SRF35-2X22-8003D1",
+                settings,
+                out double differentProductsSimilarity);
+
+        Assert.True(differentProductsSimilarity < 0.35);
+        Assert.False(differentProductsPass);
+
+        bool mistypedPrefixPasses =
+            MissingImChecker.PassesArticleSimilarityThreshold(
+                "SRF20-3V10-0001",
+                "SRF70-3V10-0001",
+                settings,
+                out double mistypedPrefixSimilarity);
+
+        Assert.True(mistypedPrefixSimilarity >= 0.35);
+        Assert.True(mistypedPrefixPasses);
+
+        settings.MinimumArticleSimilarityForLocalGroup =
+            mistypedPrefixSimilarity;
+
+        Assert.True(MissingImChecker.PassesArticleSimilarityThreshold(
+            "SRF20-3V10-0001",
+            "SRF70-3V10-0001",
+            settings,
+            out _));
+    }
+
+    [Fact]
+    public void MinimumArticleSimilarityForLocalGroupIsClonedNormalizedAndSerialized()
+    {
+        var settings = new MissingImSettings
+        {
+            MinimumArticleSimilarityForLocalGroup = 0.47
+        };
+
+        Assert.Equal(
+            0.47,
+            settings.Clone().MinimumArticleSimilarityForLocalGroup);
+
+        settings.MinimumArticleSimilarityForLocalGroup = 1.50;
+        settings.Normalize();
+
+        Assert.Equal(
+            1.00,
+            settings.MinimumArticleSimilarityForLocalGroup);
+
+        var roundTrip = ProcessingSettings.FromJson(
+            new ProcessingSettings
+            {
+                MissingIm = new MissingImSettings
+                {
+                    MinimumArticleSimilarityForLocalGroup = 0.47
+                }
+            }.ToJson());
+
+        Assert.Equal(
+            0.47,
+            roundTrip.MissingIm.MinimumArticleSimilarityForLocalGroup);
+    }
+    [Fact]
+    public void FirstNumericArticleFragmentRequiresExactMatch()
+    {
+        double exactMatch = MissingImSimilarity.CompareArticles(
+            "SRF50",
+            "SRF50");
+
+        double differentFirstNumericFragment =
+            MissingImSimilarity.CompareArticles(
+                "SRF50",
+                "SRF30");
+
+        Assert.Equal(1.00, exactMatch);
+        Assert.Equal(0.00, differentFirstNumericFragment);
+    }
 }
