@@ -44,12 +44,11 @@
                         Padding="10,4"
                         Width="Auto"
                         Margin="0,0,8,4"
-                        Background="{DynamicResource Brush.Button.Accent}"
                         FontWeight="Bold" />
 
                     <Button Content="Отменить проверку"
                         Command="{Binding CancelCommand}"
-                        HorizontalAlignment="Center"
+                        HorizontalAlignment="Right"
                         HorizontalContentAlignment="Center"
                         Padding="10,4"
                         Width="Auto"
@@ -62,7 +61,7 @@
                         Padding="10,4"
                         Width="Auto"
                         Visibility="{Binding HasOutput, Converter={StaticResource BoolToVis}}"
-                        HorizontalAlignment="Right" Margin="0,0,0,4" />
+                        HorizontalAlignment="Right" Margin="0,0,0,4" FontWeight="Bold" Background="{DynamicResource Brush.Button.Accent}" />
                 </Grid>
             </WrapPanel>
 

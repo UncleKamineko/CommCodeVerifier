@@ -18,7 +18,9 @@
             <!-- ================= отдельный файл ================= -->
             <WrapPanel Margin="0,4">
                 <TextBlock Style="{StaticResource RowCaption}" Text="Проверка по отдельному файлу" />
-                <Button Content="Загрузить файл" Command="{Binding LoadFileCommand}" />
+                <Button Content="Загрузить файл и запустить проверку"
+                        Command="{Binding LoadFileCommand}"
+                        FontWeight="Bold" />
             </WrapPanel>
 
             <TextBlock Text="{Binding Error}" Foreground="Red" TextWrapping="Wrap" Margin="0,4"

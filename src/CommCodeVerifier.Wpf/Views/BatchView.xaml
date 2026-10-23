@@ -37,8 +37,9 @@
                     <Setter Property="Margin" Value="0,0,8,4" />
                 </Style>
             </WrapPanel.Resources>
-            <Button Content="Загрузить файл для анализа"
-                    Command="{Binding LoadAndRunCommand}" />
+            <Button Content="Загрузить файл и запустить проверку"
+                    Command="{Binding LoadAndRunCommand}"
+                    FontWeight="Bold" />
             <Button Content="Прервать анализ"
                     Command="{Binding CancelCommand}"
                     Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}" />
