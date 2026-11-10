@@ -23,5 +23,12 @@
     <None Include="Config\**\*" CopyToOutputDirectory="PreserveNewest" />
     <None Include="Golden\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+
+  <!-- Карты артикула цилиндров берутся из шаблонов программы, без отдельной копии в Config. -->
+  <ItemGroup>
+    <None Include="..\..\src\CommCodeVerifier.Wpf\Assets\Файлы конфигурации\Файлы конфигурации артикул\Цилиндры\*.xlsx"
+          Link="ArticleMaps\%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
     
 </Project>

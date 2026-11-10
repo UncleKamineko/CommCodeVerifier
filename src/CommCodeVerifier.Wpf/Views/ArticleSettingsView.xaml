@@ -1,0 +1,79 @@
+<UserControl x:Class="CommCodeVerifier.Wpf.Views.ArticleSettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="14">
+            <TextBlock Style="{StaticResource HeaderText}"
+                       Text="Настройки соответствия"
+                       Margin="0,4,0,10" />
+
+            <GroupBox Padding="12"
+                      Margin="0,0,0,10"
+                      BorderBrush="Black"
+                      BorderThickness="3">
+                <GroupBox.Header>
+                    <TextBlock Text="Карты"
+                               FontWeight="Bold" />
+                </GroupBox.Header>
+
+                <StackPanel>
+                    <TextBlock Text="Карта преобразования хода"
+                               FontWeight="SemiBold" />
+
+                    <DockPanel Margin="0,4,0,10">
+                        <Button Content="Выбрать…"
+                                Command="{Binding PickAlenMapCommand}"
+                                DockPanel.Dock="Right" />
+                        <TextBlock Text="{Binding AlenMapPath}"
+                                   TextTrimming="CharacterEllipsis"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0" />
+                    </DockPanel>
+
+                    <TextBlock Text="Карта преобразования семейства"
+                               FontWeight="SemiBold" />
+
+                    <DockPanel Margin="0,4,0,10">
+                        <Button Content="Выбрать…"
+                                Command="{Binding PickMidMapCommand}"
+                                DockPanel.Dock="Right" />
+                        <TextBlock Text="{Binding MidMapPath}"
+                                   TextTrimming="CharacterEllipsis"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0" />
+                    </DockPanel>
+
+                    <TextBlock Text="Карта преобразования доп.символов"
+                               FontWeight="SemiBold" />
+
+                    <DockPanel Margin="0,4,0,10">
+                        <Button Content="Выбрать…"
+                                Command="{Binding PickDopCodeMapCommand}"
+                                DockPanel.Dock="Right" />
+                        <TextBlock Text="{Binding DopCodeMapPath}"
+                                   TextTrimming="CharacterEllipsis"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,8,0" />
+                    </DockPanel>
+
+                    <Button Content="Восстановить карты по умолчанию"
+                            Command="{Binding ResetMapsCommand}"
+                            HorizontalAlignment="Left" />
+                </StackPanel>
+            </GroupBox>
+
+            <GroupBox Padding="12"
+                      BorderBrush="Black"
+                      BorderThickness="3">
+                <GroupBox.Header>
+                    <TextBlock Text="Инструкция преобразования"
+                               FontWeight="Bold" />
+                </GroupBox.Header>
+
+                <TextBlock Text="{Binding InstructionPath}"
+                           TextWrapping="Wrap" />
+            </GroupBox>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

@@ -8,7 +8,8 @@ namespace CommCodeVerifier.Wpf.ViewModels;
 public enum SectionId
 {
     CommercialCode,
-    InternetShop
+    InternetShop,
+    Article
 }
 
 /// <summary>
@@ -21,7 +22,9 @@ public enum TabId
     AnalysisSettings,
     ImCheck,
     MissingIm,
-    ImAnalysisSettings
+    ImAnalysisSettings,
+    CylinderArticle,
+    ArticleSettings
 }
 
 /// <summary>

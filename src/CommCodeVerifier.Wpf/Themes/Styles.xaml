@@ -89,6 +89,16 @@
             Value="Normal" />
     </Style>
 
+    <Style x:Key="SectionArticleText"
+        TargetType="TextBlock">
+        <Setter Property="FontFamily"
+        Value="Segoe UI" />
+        <Setter Property="FontSize"
+        Value="16" />
+        <Setter Property="FontWeight"
+        Value="Normal" />
+    </Style>
+    
     <DataTemplate x:Key="CommercialCodeSectionTemplate">
         <TextBlock Text="{Binding Title}"
                Style="{StaticResource SectionCommercialCodeText}" />
@@ -99,10 +109,16 @@
                Style="{StaticResource SectionInternetShopText}" />
     </DataTemplate>
 
+    <DataTemplate x:Key="ArticleSectionTemplate">
+        <TextBlock Text="{Binding Title}"
+               Style="{StaticResource SectionArticleText}" />
+    </DataTemplate>
+    
     <controls:SectionItemTemplateSelector
     x:Key="SectionItemTemplateSelector"
     CommercialCodeTemplate="{StaticResource CommercialCodeSectionTemplate}"
-    InternetShopTemplate="{StaticResource InternetShopSectionTemplate}" />
+    InternetShopTemplate="{StaticResource InternetShopSectionTemplate}"
+    ArticleTemplate="{StaticResource ArticleSectionTemplate}" />
 
     <!-- ================= кнопки ================= -->
     <!-- Свой шаблон: скругление (controls:ButtonAssist.CornerRadius) и фон, который
@@ -172,7 +188,7 @@
     </Style>
 
     <!-- ================= текст ================= -->
-    <!-- Заголовки: на 1 больше текста вкладок, полужирные (как в WinForms 0.9.0). -->
+    <!-- Заголовки: на 1 больше текста вкладок, полужирные -->
     <Style x:Key="HeaderText" TargetType="TextBlock">
         <Setter Property="FontSize" Value="{DynamicResource Font.Header}" />
         <Setter Property="FontWeight" Value="Bold" />

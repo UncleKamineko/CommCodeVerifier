@@ -24,6 +24,16 @@ public sealed class ProcessingSettings
     public string? ImRulesFilePath { get; set; }
     /// Правила проверки артикула для ИМ.
     public string? ImArticleRulesFilePath { get; set; }
+
+    /// <summary>Пользовательский путь к карте ALEN (блок хода).</summary>
+    public string? ArticleAlenMapFilePath { get; set; }
+
+    /// <summary>Пользовательский путь к карте MID (блок семейства).</summary>
+    public string? ArticleMidMapFilePath { get; set; }
+
+    /// <summary>Пользовательский путь к карте доп. кода (5-7 символы).
+    /// символ исполнения описан в инструкции напрямую и не требует отдельного файла</summary>
+    public string? ArticleDopCodeMapFilePath { get; set; }
     /// <summary>
     /// Настройки поиска коммерческих кодов с возможным отсутствием признака ИМ.
     /// </summary>
@@ -54,7 +64,10 @@ public sealed class ProcessingSettings
         !string.IsNullOrWhiteSpace(ExclusionsFilePath) ||
         !string.IsNullOrWhiteSpace(ForceDeleteWordsFilePath) ||
         !string.IsNullOrWhiteSpace(ImRulesFilePath) ||
-        !string.IsNullOrWhiteSpace(ImArticleRulesFilePath);
+        !string.IsNullOrWhiteSpace(ImArticleRulesFilePath) ||
+        !string.IsNullOrWhiteSpace(ArticleAlenMapFilePath) ||
+        !string.IsNullOrWhiteSpace(ArticleMidMapFilePath) ||
+        !string.IsNullOrWhiteSpace(ArticleDopCodeMapFilePath);
 
     /// Параметры JSON: отступы, перечисления строками («Paradigms», «DecimalSeparator»).
     public static JsonSerializerOptions JsonOptions { get; } = new()

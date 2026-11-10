@@ -125,7 +125,8 @@
                 <GroupBox Padding="12,8,12,12" Margin="0,0,0,8" BorderBrush="Black" BorderThickness="3">
                     <GroupBox.Header>
                         <TextBlock TextWrapping="Wrap"
-                                   Text="Файлы конфигураций («Значащие слова.txt», «Удаляемые_окончания.txt», «Артикулы_исключения.xlsx», «Слова удаления кода.txt»)" FontSize="14" FontWeight="Bold" />
+                                   Text="Файлы конфигураций"
+                                   FontSize="14" FontWeight="Bold" />
                     </GroupBox.Header>
                     <StackPanel>
                         <TextBlock TextWrapping="Wrap" MaxWidth="680" HorizontalAlignment="Left" Margin="0,0,0,8"

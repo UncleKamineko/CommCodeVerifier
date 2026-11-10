@@ -47,6 +47,10 @@ public sealed partial class MainViewModel : ObservableObject
 
     public ImAnalysisSettingsViewModel ImAnalysisSettings { get; }
 
+    public CylinderArticleViewModel CylinderArticle { get; }
+
+    public ArticleSettingsViewModel ArticleSettings { get; }
+
     public ObservableCollection<NavigationSection> Sections { get; } = new();
 
     /// <summary>
@@ -108,6 +112,8 @@ public sealed partial class MainViewModel : ObservableObject
         ImCheck = new ImCheckViewModel(services, Processing, ReloadConfiguration);
         MissingIm = new MissingImViewModel(services, Processing);
         ImAnalysisSettings = new ImAnalysisSettingsViewModel(MissingIm, ImCheck);
+        CylinderArticle = new CylinderArticleViewModel(services);
+        ArticleSettings = new ArticleSettingsViewModel(services);
         BuildNavigation();
 
         ValidateNavigation();
@@ -120,6 +126,9 @@ public sealed partial class MainViewModel : ObservableObject
 
         _lastTabs[SectionId.InternetShop] =
             FindTab(TabId.ImCheck)!;
+
+        _lastTabs[SectionId.Article] =
+            FindTab(TabId.CylinderArticle)!;
 
         _navigationUpdateInProgress = true;
         try
@@ -179,6 +188,18 @@ public sealed partial class MainViewModel : ObservableObject
             "Настройки анализа для ИМ",
             ImAnalysisSettings);
 
+        var cylinderArticle = new NavigationTab(
+            TabId.CylinderArticle,
+            SectionId.Article,
+            "Цилиндры-генерация",
+             CylinderArticle);
+
+        var articleSettings = new NavigationTab(
+            TabId.ArticleSettings,
+            SectionId.Article,
+            "Настройки соответствия",
+            ArticleSettings);
+
         var commercialCode = new NavigationSection(
             SectionId.CommercialCode,
             "Коммерческий код",
@@ -201,9 +222,17 @@ public sealed partial class MainViewModel : ObservableObject
             },
             "SectionInternetShopText");
 
+        var article = new NavigationSection(
+            SectionId.Article,
+            "Артикул",
+            new[] { cylinderArticle, articleSettings },
+            "SectionArticleText");
+
         Sections.Clear();
         Sections.Add(commercialCode);
         Sections.Add(internetShop);
+        Sections.Add(article);
+
     }
 
     private NavigationTab? FindTab(TabId id)

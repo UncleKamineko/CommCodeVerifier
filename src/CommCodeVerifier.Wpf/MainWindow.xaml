@@ -55,7 +55,15 @@
         <DataTemplate DataType="{x:Type vm:ImAnalysisSettingsViewModel}">
             <views:ImAnalysisSettingsView />
         </DataTemplate>
-        
+
+        <DataTemplate DataType="{x:Type vm:CylinderArticleViewModel}">
+            <views:CylinderArticleView />
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:ArticleSettingsViewModel}">
+            <views:ArticleSettingsView />
+        </DataTemplate>
+
         <DataTemplate x:Key="SectionItemTemplate">
             <ContentControl Content="{Binding}"
                     ContentTemplateSelector="{StaticResource SectionItemTemplateSelector}" />
