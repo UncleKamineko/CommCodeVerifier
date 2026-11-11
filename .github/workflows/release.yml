@@ -40,8 +40,27 @@ jobs:
             -o publish
           Compress-Archive -Path publish/* -DestinationPath "CommCodeVerifier.v$v.zip"
 
+      - name: Публикация CommCodeArticle (один exe, .NET внутри)
+        shell: pwsh
+        run: |
+          # Своя версия программы — <Version> в CommCodeArticle.csproj.
+          $csproj = [xml](Get-Content src/CommCodeArticle/CommCodeArticle.csproj -Raw -Encoding utf8)
+          $v = ($csproj.Project.PropertyGroup | ForEach-Object { $_.Version } | Where-Object { $_ } | Select-Object -First 1)
+          if (-not $v) {
+            Write-Error "Не найдена <Version> в CommCodeArticle.csproj"
+            exit 1
+          }
+          dotnet publish src/CommCodeArticle/CommCodeArticle.csproj `
+            -c Release -r win-x64 --self-contained true `
+            -p:PublishSingleFile=true `
+            -p:EnableCompressionInSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true `
+            -p:DebugType=none `
+            -o publish-article
+          Compress-Archive -Path publish-article/* -DestinationPath "CommCodeArticle.v$v.zip"
+
       - name: Прикрепить zip к релизу
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release upload "${{ github.event.release.tag_name }}" (Get-ChildItem CommCodeVerifier.v*.zip)
+        run: gh release upload "${{ github.event.release.tag_name }}" (Get-ChildItem CommCodeVerifier.v*.zip, CommCodeArticle.v*.zip)
