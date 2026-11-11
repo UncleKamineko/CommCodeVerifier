@@ -23,14 +23,20 @@ jobs:
       - name: Публикация (один exe, .NET внутри)
         shell: pwsh
         run: |
+          # Версия задаётся заголовком окна (MainWindow.xaml); тег должен с ней совпадать.
           $v = "${{ github.event.release.tag_name }}".TrimStart('v')
+          $xaml = Get-Content src/CommCodeVerifier.Wpf/MainWindow.xaml -Raw -Encoding utf8
+          $title = [regex]::Match($xaml, '(?<=Title="CommCodeVerifier v)[0-9][^"]*').Value
+          if ($title -ne $v) {
+            Write-Error "Тег v$v не совпадает с версией в заголовке окна: v$title"
+            exit 1
+          }
           dotnet publish src/CommCodeVerifier.Wpf/CommCodeVerifier.Wpf.csproj `
             -c Release -r win-x64 --self-contained true `
             -p:PublishSingleFile=true `
             -p:EnableCompressionInSingleFile=true `
             -p:IncludeNativeLibrariesForSelfExtract=true `
             -p:DebugType=none `
-            -p:Version=$v `
             -o publish
           Compress-Archive -Path publish/* -DestinationPath "CommCodeVerifier.v$v.zip"
 

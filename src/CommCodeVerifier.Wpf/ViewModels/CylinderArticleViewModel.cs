@@ -5,7 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace CommCodeVerifier.Wpf.ViewModels;
 
-public sealed partial class CylinderArticleViewModel : ObservableObject
+public sealed partial class CylinderArticleViewModel : ObservableObject, IResettableViewModel
 {
     private readonly AppServices _services;
 
@@ -27,6 +27,18 @@ public sealed partial class CylinderArticleViewModel : ObservableObject
     public CylinderArticleViewModel(AppServices services)
     {
         _services = services;
+    }
+
+    /// <summary>
+    /// Очистить введённые данные и результат генерации.
+    /// </summary>
+    public void Reset()
+    {
+        CommercialCode = string.Empty;
+        ManualAdditionalCode = string.Empty;
+        Article = string.Empty;
+        Message = string.Empty;
+        TailTooLong = false;
     }
 
     [RelayCommand]

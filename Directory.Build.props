@@ -1,7 +1,11 @@
 <Project>
   <PropertyGroup>
-    <!-- Версия по умолчанию для локальной сборки; в релизе берётся из тега (v1.0.0 → 1.0.0). -->
-    <Version>1.0.0-alpha.1</Version>
+    <!-- Единственный источник версии — заголовок главного окна:
+         Title="CommCodeVerifier v1.2.0" в MainWindow.xaml → Version 1.2.0 у всех сборок.
+         Релиз проверяет, что тег совпадает с этой версией (release.yml). -->
+    <MainWindowXamlPath>$(MSBuildThisFileDirectory)src\CommCodeVerifier.Wpf\MainWindow.xaml</MainWindowXamlPath>
+    <TitleVersion>$([System.Text.RegularExpressions.Regex]::Match($([System.IO.File]::ReadAllText('$(MainWindowXamlPath)')), '(?&lt;=Title="CommCodeVerifier v)[0-9][^"]*'))</TitleVersion>
+    <Version>$(TitleVersion)</Version>
     <Product>CommCodeVerifier</Product>
     <Company>UncleKamineko</Company>
     <Copyright>© UncleKamineko</Copyright>
@@ -12,4 +16,10 @@
     <Deterministic>true</Deterministic>
     <NeutralLanguage>ru-RU</NeutralLanguage>
   </PropertyGroup>
+
+  <!-- Сборка без версии запрещена: заголовок окна изменён и шаблон не совпал. -->
+  <Target Name="CheckTitleVersion" BeforeTargets="BeforeBuild">
+    <Error Condition="'$(TitleVersion)' == ''"
+           Text="Не удалось прочитать версию из Title в $(MainWindowXamlPath): ожидается Title=&quot;CommCodeVerifier v1.2.0&quot;." />
+  </Target>
 </Project>

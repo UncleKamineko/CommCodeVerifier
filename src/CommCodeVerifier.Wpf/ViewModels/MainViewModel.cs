@@ -12,6 +12,9 @@ public sealed partial class MainViewModel : ObservableObject
     public const string UnsavedOnCloseText =
         "В настройках анализа есть несохранённые изменения, выйти без сохранения?";
 
+    public const string ReturnToProductTypeSelectionText =
+        "При переходе текущие данные будут утеряны, вернуться к выбору типа изделия?";
+
     private readonly Dispatcher _dispatcher = Dispatcher.CurrentDispatcher;
 
     private SectionId _selectedSectionId;
@@ -46,7 +49,7 @@ public sealed partial class MainViewModel : ObservableObject
     public MissingImViewModel MissingIm { get; }
 
     public ImAnalysisSettingsViewModel ImAnalysisSettings { get; }
-
+    public ProductTypeSelectionViewModel ProductTypeSelection { get; }
     public CylinderArticleViewModel CylinderArticle { get; }
 
     public ArticleSettingsViewModel ArticleSettings { get; }
@@ -112,6 +115,7 @@ public sealed partial class MainViewModel : ObservableObject
         ImCheck = new ImCheckViewModel(services, Processing, ReloadConfiguration);
         MissingIm = new MissingImViewModel(services, Processing);
         ImAnalysisSettings = new ImAnalysisSettingsViewModel(MissingIm, ImCheck);
+        ProductTypeSelection = new ProductTypeSelectionViewModel(OpenProductType);
         CylinderArticle = new CylinderArticleViewModel(services);
         ArticleSettings = new ArticleSettingsViewModel(services);
         BuildNavigation();
@@ -128,7 +132,7 @@ public sealed partial class MainViewModel : ObservableObject
             FindTab(TabId.ImCheck)!;
 
         _lastTabs[SectionId.Article] =
-            FindTab(TabId.CylinderArticle)!;
+            FindTab(TabId.ProductTypeSelection)!;
 
         _navigationUpdateInProgress = true;
         try
@@ -148,6 +152,8 @@ public sealed partial class MainViewModel : ObservableObject
     /// 1. добавить SectionId;
     /// 2. создать его вкладки;
     /// 3. добавить NavigationSection в этот метод.
+    /// 4. Для нового набора вкладок типа изделия раздела «Артикул» достаточно
+    /// создать его вкладки с соответствующим ProductType и добавить их в раздел.
     ///
     /// Остальная логика навигации изменяться не должна.
     /// </summary>
@@ -176,7 +182,7 @@ public sealed partial class MainViewModel : ObservableObject
             SectionId.InternetShop,
             "Установленный ИМ",
             ImCheck);
-        
+
         var missingIm = new NavigationTab(
             TabId.MissingIm,
             SectionId.InternetShop,
@@ -187,18 +193,24 @@ public sealed partial class MainViewModel : ObservableObject
             SectionId.InternetShop,
             "Настройки анализа для ИМ",
             ImAnalysisSettings);
-
+        var productTypeSelection = new NavigationTab(
+            TabId.ProductTypeSelection,
+            SectionId.Article,
+            "Тип изделия",
+            ProductTypeSelection);
         var cylinderArticle = new NavigationTab(
             TabId.CylinderArticle,
             SectionId.Article,
             "Цилиндры-генерация",
-             CylinderArticle);
+            CylinderArticle,
+            ProductType.Cylinders);
 
         var articleSettings = new NavigationTab(
             TabId.ArticleSettings,
             SectionId.Article,
             "Настройки соответствия",
-            ArticleSettings);
+            ArticleSettings,
+            ProductType.Cylinders);
 
         var commercialCode = new NavigationSection(
             SectionId.CommercialCode,
@@ -225,7 +237,7 @@ public sealed partial class MainViewModel : ObservableObject
         var article = new NavigationSection(
             SectionId.Article,
             "Артикул",
-            new[] { cylinderArticle, articleSettings },
+            new[] { productTypeSelection, cylinderArticle, articleSettings },
             "SectionArticleText");
 
         Sections.Clear();
@@ -244,32 +256,77 @@ public sealed partial class MainViewModel : ObservableObject
 
     private void ActivateSection(NavigationSection section)
     {
+        var tabToSelect =
+            _lastTabs.TryGetValue(section.Id, out var previousTab)
+                && section.Tabs.Contains(previousTab)
+                ? previousTab
+                : section.Tabs.FirstOrDefault();
+
+        if (tabToSelect != null)
+            ShowTab(tabToSelect);
+    }
+
+    /// <summary>
+    /// Показывает вкладку вместе с вкладками её набора:
+    /// вкладками того же раздела с тем же типом изделия.
+    /// </summary>
+    private void ShowTab(NavigationTab tab)
+    {
         _navigationUpdateInProgress = true;
 
         try
         {
             VisibleTabs.Clear();
 
-            foreach (var tab in section.Tabs)
-                VisibleTabs.Add(tab);
+            foreach (var sectionTab in Sections
+                         .First(section => section.Id == tab.Section)
+                         .Tabs
+                         .Where(sectionTab => sectionTab.ProductType == tab.ProductType))
+                VisibleTabs.Add(sectionTab);
 
-            var tabToSelect =
-                _lastTabs.TryGetValue(section.Id, out var previousTab)
-                    && section.Tabs.Contains(previousTab)
-                    ? previousTab
-                    : section.Tabs.FirstOrDefault();
-
-            if (tabToSelect != null)
-            {
-                SetProperty(ref _selectedTab, tabToSelect, nameof(SelectedTab));
-                _lastTabs[section.Id] = tabToSelect;
-                OnTabActivated(tabToSelect);
-            }
+            SetProperty(ref _selectedTab, tab, nameof(SelectedTab));
+            _lastTabs[tab.Section] = tab;
+            OnTabActivated(tab);
         }
         finally
         {
             _navigationUpdateInProgress = false;
         }
+    }
+
+    /// <summary>
+    /// Открыть набор вкладок выбранного типа изделия.
+    /// Если набор ещё не создан, ничего не происходит.
+    /// </summary>
+    private void OpenProductType(ProductType productType)
+    {
+        var tab = FindTab(TabId.ProductTypeSelection)!;
+
+        var firstTab = Sections
+            .First(section => section.Id == tab.Section)
+            .Tabs
+            .FirstOrDefault(sectionTab => sectionTab.ProductType == productType);
+
+        if (firstTab != null)
+            ShowTab(firstTab);
+    }
+
+    /// <summary>
+    /// «Вернуться к выбору типа изделия»: после подтверждения
+    /// данные вкладок текущего набора сбрасываются.
+    /// </summary>
+    [RelayCommand]
+    private void ReturnToProductTypeSelection()
+    {
+        if (!Services.Dialogs.AskYesNo(ReturnToProductTypeSelectionText))
+            return;
+
+        foreach (var viewModel in VisibleTabs
+                     .Select(tab => tab.ViewModel)
+                     .OfType<IResettableViewModel>())
+            viewModel.Reset();
+
+        ShowTab(FindTab(TabId.ProductTypeSelection)!);
     }
 
     private void OnTabActivated(NavigationTab tab)

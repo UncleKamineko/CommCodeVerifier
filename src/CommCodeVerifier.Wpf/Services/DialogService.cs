@@ -40,7 +40,16 @@ public sealed class DialogService : IDialogService
     public bool Confirm(string text, string? title = null) =>
         Show(text, title, MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes;
 
-    /// Временная реализация. На этапе 6 — окно с текстом и кнопками как у YesSaveDialog WinForms.
+    /// В отличие от Confirm (у MessageBox с «Да»/«Нет» крестик недоступен)
+    /// окно закрывается крестиком и Esc — это ответ «Нет».
+    public bool AskYesNo(string text, string? title = null)
+    {
+        var w = new Views.ConfirmWindow(text, title ?? AppTitle);
+        var owner = Owner;
+        if (owner != null) w.Owner = owner;
+        else w.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+        return w.ShowDialog() == true;
+    }
     public SaveChoice AskSaveChanges(string? message = null)
     {
         var w = new Views.SaveChangesWindow(message ?? Views.SaveChangesWindow.DefaultMessage);

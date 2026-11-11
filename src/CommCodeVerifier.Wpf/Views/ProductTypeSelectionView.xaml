@@ -1,0 +1,49 @@
+<UserControl x:Class="CommCodeVerifier.Wpf.Views.ProductTypeSelectionView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:CommCodeVerifier.Wpf.ViewModels">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="14">
+            <TextBlock Style="{StaticResource HeaderText}"
+                       Text="Для перехода к генерации артикула по коммерческому коду выберите соответствующий тип номенклатуры:"
+                       TextWrapping="Wrap"
+                       Margin="0,4,0,12" />
+
+            <!-- Кнопки — ProductTypeSelectionViewModel.ProductTypes. -->
+            <ItemsControl ItemsSource="{Binding ProductTypes}"
+                          HorizontalAlignment="Left">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <!-- Размер сетки кнопок: число столбцов и строк задаётся только здесь. -->
+                        <UniformGrid Columns="2"
+                                     Rows="6" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Button x:Name="TypeButton"
+                                Content="{Binding Title}"
+                                Command="{Binding DataContext.SelectCommand,
+                                          RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                CommandParameter="{Binding}"
+                                MinWidth="240"
+                                MinHeight="40"
+                                Margin="0,0,10,10" />
+
+                        <DataTemplate.Triggers>
+                            <!-- «Цилиндры» — акцентная кнопка. -->
+                            <DataTrigger Binding="{Binding ProductType}"
+                                         Value="{x:Static vm:ProductType.Cylinders}">
+                                <Setter TargetName="TypeButton"
+                                        Property="Style"
+                                        Value="{StaticResource AccentButton}" />
+                            </DataTrigger>
+                        </DataTemplate.Triggers>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

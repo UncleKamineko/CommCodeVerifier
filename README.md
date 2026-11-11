@@ -197,11 +197,13 @@ dotnet test CommCodeVerifier.sln
 | `.github/workflows/release.yml` | публикация релиза | тесты, публикация одним exe, прикрепление `CommCodeVerifier.v<версия>.zip` к релизу |
 
 Как выпустить версию:
-1. Releases → Draft a new release.
-2. Создайте тег `v1.0.0`; для предварительной версии — `v1.0.0-alpha.1` с флажком «Set as a pre-release».
-3. Нажмите Publish.
+1. Измените версию в заголовке окна: `Title="CommCodeVerifier v1.2.0"` в `src/CommCodeVerifier.Wpf/MainWindow.xaml`.
+2. Releases → Draft a new release.
+3. Создайте тег с той же версией: `v1.2.0`; для предварительной версии — `v1.2.0-alpha.1` с флажком «Set as a pre-release».
+4. Нажмите Publish.
 
-Номер версии exe берётся из тега.
+Номер версии exe берётся из заголовка окна (`Directory.Build.props`). Если тег не совпадает
+с версией в заголовке, публикация релиза останавливается с ошибкой.
 
 ## Структура репозитория
 

@@ -13,6 +13,9 @@ public interface IDialogService
     /// «Да» / «Нет».
     bool Confirm(string text, string? title = null);
 
+    /// «Да» / «Нет»; Esc и крестик — «Нет».
+    bool AskYesNo(string text, string? title = null);
+
     /// Несохранённые изменения: не сохранять / сохранить; Esc и крестик — отмена.
     SaveChoice AskSaveChanges(string? message = null);
 
