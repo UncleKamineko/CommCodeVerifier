@@ -1,0 +1,15 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    <sys:Double x:Key="Font.Text">12</sys:Double>
+    <sys:Double x:Key="Font.Header">13</sys:Double>
+    <sys:Double x:Key="Font.Button">12</sys:Double>
+    <sys:Double x:Key="Font.Code">12</sys:Double>
+    <sys:Double x:Key="Font.Rules">8</sys:Double>
+    <!-- Сообщение о пустом результате: на 1 больше списка правил.  -->
+    <sys:Double x:Key="Font.RulesEmphasis">9</sys:Double>
+    <sys:Double x:Key="Font.Summary">8</sys:Double>
+    <!-- Заголовок главного окна (свой заголовок через WindowChrome). -->
+    <sys:Double x:Key="Font.Title">16</sys:Double>
+    <FontFamily x:Key="FontFamily.Title">Segoe UI Semibold</FontFamily>
+</ResourceDictionary>

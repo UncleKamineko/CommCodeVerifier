@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!-- Отдельная программа «Артикул»: самодостаточная, без ссылок на CommCodeVerifier.
+         Оформление (цвета, шрифты, стили) скопировано из CommCodeVerifier. -->
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net8.0-windows</TargetFramework>
+        <UseWPF>true</UseWPF>
+        <AssemblyName>CommCodeArticle</AssemblyName>
+        <RootNamespace>CommCodeArticle</RootNamespace>
+        <Product>CommCodeArticle</Product>
+        <Version>1.0.0</Version>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <SatelliteResourceLanguages>ru</SatelliteResourceLanguages>
+        <ApplicationIcon>Elegantthemes-Softies-Clipboard.ico</ApplicationIcon>
+        <EnableDefaultApplicationDefinition>true</EnableDefaultApplicationDefinition>
+        <EnableDefaultPageItems>true</EnableDefaultPageItems>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="ClosedXML" Version="0.102.2" />
+        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    </ItemGroup>
+
+    <!-- Шаблоны конфигурации: рядом с exe в «Файлы конфигурации\Файлы конфигурации артикул\Цилиндры». -->
+    <ItemGroup>
+        <None Include="Assets\Файлы конфигурации артикул\**\*" Link="Файлы конфигурации\Файлы конфигурации артикул\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Resource Include="Elegantthemes-Softies-Clipboard.ico" />
+    </ItemGroup>
+
+</Project>
