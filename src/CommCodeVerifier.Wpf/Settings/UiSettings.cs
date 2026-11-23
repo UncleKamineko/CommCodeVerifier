@@ -30,6 +30,9 @@ public sealed class UiSettings
     /// Цветовая схема интерфейса — ключ из Themes/ColorSchemes.xaml.
     public string ColorScheme { get; set; } = "Light";
 
+    /// Расширенные настройки оформления (окно «Расширенные настройки»).
+    public AdvancedUiSettings Advanced { get; set; } = new();
+
     public double? WindowLeft { get; set; }
     public double? WindowTop { get; set; }
     public double? WindowWidth { get; set; }
@@ -43,6 +46,10 @@ public sealed class UiSettings
         CodeFontPx = Clamp(CodeFontPx);
         RulesFontPx = Clamp(RulesFontPx);
         SummaryFontPx = Clamp(SummaryFontPx);
+
+        // В старом ui-settings.json поля нет или там null.
+        Advanced ??= new AdvancedUiSettings();
+        Advanced.Normalize();
     }
 
     private static int Clamp(int v) => Math.Clamp(v, MinFont, MaxFont);

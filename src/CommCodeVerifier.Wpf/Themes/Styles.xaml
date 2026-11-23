@@ -53,22 +53,24 @@
     <controls:CountToVisibilityConverter x:Key="CountToVis" />
 
     <!-- ================= радиусы скругления ================= -->
-    <!--    Единая числовая основа радиуса.
-
-    Вкладки и разделы используют одно значение Radius.Value.
+    <!--    Числовые радиусы вкладок и разделов, радиус кнопок.
+    Значения по умолчанию; при запуске заменяются расширенными
+    настройками из ui-settings.json (Themes/AdvancedResources.cs).
     Форма скругления задаётся конвертером:
-    - TopOnly  — верхние углы вкладки;
-    - LeftOnly — левые углы раздела.
+    - TopOnly  — верхние углы вкладки (Radius.Tab);
+    - LeftOnly — левые углы раздела (Radius.Section).
 -->
-    <sys:Double x:Key="Radius.Value">6</sys:Double>
+    <sys:Double x:Key="Radius.Tab">6</sys:Double>
+    <sys:Double x:Key="Radius.Section">6</sys:Double>
 
     <CornerRadius x:Key="Radius.Button">6</CornerRadius>
 
     <controls:RadiusToCornerRadiusConverter
     x:Key="RadiusToCornerRadius" />
 
-    <!-- Фиксированные шрифты разделов.
-     Изменяются только здесь, отдельно для каждого раздела. -->
+    <!-- Шрифты разделов: значения по умолчанию, отдельно для каждого раздела.
+     В расширенных настройках их можно переопределить по ключу стиля
+     (Themes/AdvancedResources.cs); шаблоны берут стили через DynamicResource. -->
     <Style x:Key="SectionCommercialCodeText"
        TargetType="TextBlock">
         <Setter Property="FontFamily"
@@ -101,17 +103,17 @@
     
     <DataTemplate x:Key="CommercialCodeSectionTemplate">
         <TextBlock Text="{Binding Title}"
-               Style="{StaticResource SectionCommercialCodeText}" />
+               Style="{DynamicResource SectionCommercialCodeText}" />
     </DataTemplate>
 
     <DataTemplate x:Key="InternetShopSectionTemplate">
         <TextBlock Text="{Binding Title}"
-               Style="{StaticResource SectionInternetShopText}" />
+               Style="{DynamicResource SectionInternetShopText}" />
     </DataTemplate>
 
     <DataTemplate x:Key="ArticleSectionTemplate">
         <TextBlock Text="{Binding Title}"
-               Style="{StaticResource SectionArticleText}" />
+               Style="{DynamicResource SectionArticleText}" />
     </DataTemplate>
     
     <controls:SectionItemTemplateSelector
@@ -243,7 +245,7 @@
             Value="12,4" />
         
         <Setter Property="controls:RadiusAssist.Value"
-        Value="{DynamicResource Radius.Value}" />
+        Value="{DynamicResource Radius.Tab}" />
         
         <!-- Это относится к содержимому выбранной вкладки.
          Оно должно быть выровнено слева и сверху. -->
@@ -420,7 +422,7 @@
         Value="0" />
 
         <Setter Property="controls:RadiusAssist.Value"
-        Value="{DynamicResource Radius.Value}" />
+        Value="{DynamicResource Radius.Section}" />
 
         <Setter Property="Margin"
         Value="0" />

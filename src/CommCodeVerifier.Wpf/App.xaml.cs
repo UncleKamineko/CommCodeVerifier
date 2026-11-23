@@ -36,6 +36,7 @@ public partial class App : Application
         }
 
         FontResources.Apply(settings.Ui);
+        AdvancedResources.Apply(settings.Ui.Advanced);
         ColorSchemes.Apply(settings.Ui.ColorScheme);
 
         var shell = new ShellService();

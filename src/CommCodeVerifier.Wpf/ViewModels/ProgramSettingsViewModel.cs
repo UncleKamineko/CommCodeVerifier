@@ -18,8 +18,12 @@ public sealed partial class ProgramSettingsViewModel : ObservableObject
     /// Доступные схемы — из Themes/ColorSchemes.xaml.
     public IReadOnlyList<ColorSchemeInfo> ColorSchemeOptions { get; } = ColorSchemes.All;
 
-    public ProgramSettingsViewModel(UiSettings s)
+    private readonly Action? _openAdvanced;
+
+    /// <param name="openAdvanced">Открыть «Расширенные настройки» (сохраняются отдельно, своей кнопкой).</param>
+    public ProgramSettingsViewModel(UiSettings s, Action? openAdvanced = null)
     {
+        _openAdvanced = openAdvanced;
         ButtonFontPx = s.ButtonFontPx;
         TabTextFontPx = s.TabTextFontPx;
         CodeFontPx = s.CodeFontPx;
@@ -27,6 +31,9 @@ public sealed partial class ProgramSettingsViewModel : ObservableObject
         SummaryFontPx = s.SummaryFontPx;
         ColorScheme = ColorSchemes.Resolve(s.ColorScheme);
     }
+
+    [RelayCommand]
+    private void OpenAdvanced() => _openAdvanced?.Invoke();
 
     [RelayCommand]
     private void ResetDefaults()

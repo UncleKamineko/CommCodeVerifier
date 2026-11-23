@@ -370,7 +370,9 @@ public sealed partial class MainViewModel : ObservableObject
     [RelayCommand]
     private void OpenProgramSettings()
     {
-        Services.Windows.ShowProgramSettings();
+        // Расширенные настройки показывают шрифты фактических разделов навигации.
+        Services.Windows.ShowProgramSettings(
+            Sections.Select(section => new SectionStyleInfo(section.Title, section.TextStyleKey)).ToList());
     }
 
     [RelayCommand]

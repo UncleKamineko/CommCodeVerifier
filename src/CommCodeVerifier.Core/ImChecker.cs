@@ -81,6 +81,13 @@ public static class ImChecker
                 error = $"заголовок 2-го столбца «{h2}» вместо «{HeaderCode}»";
                 return false;
             }
+            // Без этой проверки файл без столбца группы дал бы пустой результат без ошибки.
+            string h3 = (ws.Cell(1, 3).GetFormattedString() ?? "").Trim();
+            if (!h3.Equals(BatchProcessor.SrcHeaderGroup, StringComparison.OrdinalIgnoreCase))
+            {
+                error = $"заголовок 3-го столбца «{h3}» вместо «{BatchProcessor.SrcHeaderGroup}»";
+                return false;
+            }
 
             var last = ws.LastRowUsed();
             if (last == null || last.RowNumber() < 2)
@@ -101,24 +108,14 @@ public static class ImChecker
                                          IProgress<int>? progress, CancellationToken ct)
     {
         var rows = new List<ImRow>();
-        string name = Path.GetFileName(sourcePath);
-
-        using (var wb = new XLWorkbook(sourcePath))
+        var report = new ImReport
         {
-            var ws = wb.Worksheet(1);
-            var last = ws.LastRowUsed();
-            if (last != null)
-                for (int r = 2; r <= last.RowNumber(); r++)
-                {
-                    string a = (ws.Cell(r, 1).GetFormattedString() ?? "").Trim();
-                    string c = (ws.Cell(r, 2).GetFormattedString() ?? "").Trim();
-                    if (a.Length == 0 && c.Length == 0) continue;
-                    rows.Add(new ImRow(a, c, "", name));
-                }
-        }
+            OutputFolder = CreateSingleRunFolder(),
+            ScannedTarget = Path.GetFileName(sourcePath)
+        };
 
-        var report = new ImReport { OutputFolder = CreateSingleRunFolder(), ScannedTarget = name };
-        report.ScannedFiles.Add(name);
+        // Код — столбец 2, группа выгрузки — столбец 3.
+        ReadResultFile(sourcePath, 2, 3, rows, report);
 
         Analyze(rows, codeRules, articleRules, report, progress, ct);
         return report;

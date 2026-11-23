@@ -7,7 +7,8 @@ public interface IWindowService
     void ShowHelp();
 
     /// Настройки программы (модальное окно). После «Сохранить» — запись и новые шрифты.
-    void ShowProgramSettings();
+    /// sections — разделы навигации для шрифтов в «Расширенных настройках».
+    void ShowProgramSettings(IReadOnlyList<ViewModels.SectionStyleInfo> sections);
 
     /// Результат самопроверки (модальное окно).
     void ShowSelfTest(string report);

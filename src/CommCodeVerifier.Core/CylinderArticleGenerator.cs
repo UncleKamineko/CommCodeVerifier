@@ -104,7 +104,7 @@ public sealed class CylinderArticleGenerator
         }
 
         // Раздел 3: уточнения в скобках отбрасываются и дают «**».
-        var code = StripParenthetical(Normalize(input), out var hadParenthetical);
+        var code = StripParenthetical(Normalize(input, out _), out var hadParenthetical);
         var series = FindSeries(code);
 
         if (series is null)
@@ -515,7 +515,12 @@ public sealed class CylinderArticleGenerator
         return null;
     }
 
-    private static string Normalize(string input)
+    /// <summary>
+    /// Шаг 1 инструкции: убрать пробелы, привести к верхнему регистру,
+    /// кириллические символы заменить на латиницу.
+    /// replacedPositions — позиции в результате, где кириллица заменена на латиницу.
+    /// </summary>
+    public static string Normalize(string input, out HashSet<int> replacedPositions)
     {
         var replacements = new Dictionary<char, char>
         {
@@ -546,7 +551,8 @@ public sealed class CylinderArticleGenerator
         };
 
         var builder = new StringBuilder();
-
+        replacedPositions = new HashSet<int>();
+        
         foreach (var source in input.Trim())
         {
             if (char.IsWhiteSpace(source))
@@ -557,6 +563,7 @@ public sealed class CylinderArticleGenerator
             if (replacements.TryGetValue(source, out var latin) ||
                 replacements.TryGetValue(upper, out latin))
             {
+                replacedPositions.Add(builder.Length);
                 builder.Append(latin);
             }
             else

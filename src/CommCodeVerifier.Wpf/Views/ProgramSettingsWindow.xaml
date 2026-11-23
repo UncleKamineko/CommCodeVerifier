@@ -128,7 +128,15 @@
             </ComboBox>
         </Grid>
 
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="16,4,16,14">
+        <DockPanel Margin="16,4,16,14" LastChildFill="False">
+            <!-- Неприметная ссылка: оформление, которое обычно не меняют. -->
+            <TextBlock DockPanel.Dock="Left" VerticalAlignment="Bottom" Margin="0,0,24,2"
+                       FontSize="13">
+                <Hyperlink Command="{Binding OpenAdvancedCommand}"
+                           Foreground="{DynamicResource Brush.Hint}">Расширенные настройки</Hyperlink>
+            </TextBlock>
+
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
             <StackPanel.Resources>
                 <Style TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
                     <Setter Property="MinWidth" Value="96" />
@@ -140,5 +148,6 @@
             <Button Content="Отмена" IsCancel="True" />
             <Button Content="Сохранить" IsDefault="True" Click="OnSave" />
         </StackPanel>
+        </DockPanel>
     </StackPanel>
 </Window>

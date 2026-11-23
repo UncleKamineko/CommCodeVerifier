@@ -9,6 +9,12 @@
     <!-- Сообщение о пустом результате: на 1 больше списка правил.  -->
     <sys:Double x:Key="Font.RulesEmphasis">9</sys:Double>
     <sys:Double x:Key="Font.Summary">8</sys:Double>
+
+    <!-- Ниже — расширенные настройки оформления. При запуске значения
+         заменяются из ui-settings.json (Themes/AdvancedResources.cs). -->
+
+    <!-- Шрифт интерфейса главного окна. -->
+    <FontFamily x:Key="FontFamily.Ui">Segoe UI</FontFamily>
     <!-- Заголовок главного окна (свой заголовок через WindowChrome). -->
     <sys:Double x:Key="Font.Title">16</sys:Double>
     <FontFamily x:Key="FontFamily.Title">Segoe UI Semibold</FontFamily>

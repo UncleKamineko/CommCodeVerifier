@@ -12,7 +12,7 @@
         Background="{DynamicResource Brush.Window.Background}"
         Icon="pack://application:,,,/Assets/Elegantthemes-Softies-Clipboard.ico"
         WindowStartupLocation="CenterScreen"
-        FontFamily="Segoe UI"
+        FontFamily="{DynamicResource FontFamily.Ui}"
         FontSize="{DynamicResource Font.Text}"
         TextOptions.TextFormattingMode="Display"
         UseLayoutRounding="True">

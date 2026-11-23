@@ -33,10 +33,11 @@ public sealed class WindowService : IWindowService
         _help.Show();
     }
 
-    public void ShowProgramSettings()
+    public void ShowProgramSettings(IReadOnlyList<SectionStyleInfo> sections)
     {
-        var vm = new ProgramSettingsViewModel(_settings.Ui);
-        var window = new ProgramSettingsWindow(vm) { Owner = Application.Current.MainWindow };
+        ProgramSettingsWindow? window = null;
+        var vm = new ProgramSettingsViewModel(_settings.Ui, () => ShowAdvancedSettings(window, sections));
+        window = new ProgramSettingsWindow(vm) { Owner = Application.Current.MainWindow };
         if (window.ShowDialog() != true) return;
 
         vm.ApplyTo(_settings.Ui);
@@ -51,6 +52,28 @@ public sealed class WindowService : IWindowService
                            "\n\nНовые настройки действуют до закрытия программы.");
         }
     }
+
+    /// <summary>
+    /// «Расширенные настройки» поверх «Настроек программы». Сохраняются сразу по своей
+    /// кнопке «Сохранить» и не зависят от того, как будет закрыто окно настроек программы.
+    /// </summary>
+    private void ShowAdvancedSettings(Window? owner, IReadOnlyList<SectionStyleInfo> sections)
+    {
+        var vm = new AdvancedSettingsViewModel(_settings.Ui.Advanced, sections);
+        var window = new AdvancedSettingsWindow(vm) { Owner = owner ?? Application.Current.MainWindow };
+        if (window.ShowDialog() != true) return;
+
+        vm.ApplyTo(_settings.Ui.Advanced);
+        AdvancedResources.Apply(_settings.Ui.Advanced);
+
+        try { _settings.SaveUi(); }
+        catch (Exception ex)
+        {
+            _dialogs.Error("Не удалось сохранить расширенные настройки:\n\n" + ex.Message +
+                           "\n\nНовые настройки действуют до закрытия программы.");
+        }
+    }
+
     public void ShowSelfTest(string report)
     {
         var window = new SelfTestWindow(report, _shell, _dialogs) { Owner = Application.Current.MainWindow };

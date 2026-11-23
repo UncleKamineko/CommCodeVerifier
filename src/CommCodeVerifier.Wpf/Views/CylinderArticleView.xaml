@@ -1,6 +1,7 @@
 <UserControl x:Class="CommCodeVerifier.Wpf.Views.CylinderArticleView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:CommCodeVerifier.Wpf.Controls">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="14">
@@ -18,10 +19,43 @@
                 </GroupBox.Header>
 
                 <StackPanel>
-                    <TextBox Text="{Binding CommercialCode,
-                                             UpdateSourceTrigger=PropertyChanged}"
-                             MinHeight="30"
-                             Margin="0,0,0,8" />
+                    <Grid Margin="0,0,0,8">
+                        <TextBox Text="{Binding CommercialCode,
+                                                 UpdateSourceTrigger=PropertyChanged}"
+                                 MinHeight="30"
+                                 VerticalContentAlignment="Center">
+                            <TextBox.InputBindings>
+                                <KeyBinding Key="Enter"
+                                            Command="{Binding GenerateCommand}" />
+                            </TextBox.InputBindings>
+                            <TextBox.Style>
+                                <Style TargetType="TextBox">
+                                    <Style.Triggers>
+                                        <!-- Пока поверх поля показан код с подсветкой замен,
+                                             собственный текст поля скрыт. -->
+                                        <DataTrigger Binding="{Binding CyrillicReplaced}"
+                                                     Value="True">
+                                            <Setter Property="Foreground"
+                                                    Value="Transparent" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBox.Style>
+                        </TextBox>
+
+                        <controls:HighlightedTextBlock Segments="{Binding ReplacedCodeHighlight}"
+                                                       Visibility="{Binding CyrillicReplaced,
+                                                                    Converter={StaticResource BoolToVis}}"
+                                                       IsHitTestVisible="False"
+                                                       VerticalAlignment="Center"
+                                                       Margin="4,0,4,0" />
+                    </Grid>
+
+                    <TextBlock Style="{StaticResource WarningText}"
+                               Text="Введённый код содержал кириллицу, она заменена на латиницу. В поле ввода ИСПРАВЛЕННЫЙ код!"
+                               Visibility="{Binding CyrillicReplaced,
+                                            Converter={StaticResource BoolToVis}}"
+                               Margin="0,0,0,8" />
 
                     <TextBlock Text="Символы спец.исполнения в конце артикула:"
                                Margin="0,0,0,4" />
